@@ -13,6 +13,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Pulse.Monitoring\Pulse.Monitoring.csproj" />
+    <ProjectReference Include="..\Pulse.Observability\Pulse.Observability.csproj" />
   </ItemGroup>
 
 </Project>
