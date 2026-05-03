@@ -16,6 +16,7 @@
     <ProjectReference Include="..\Pulse.Observability\Pulse.Observability.csproj" />
     <ProjectReference Include="..\Pulse.Notifications\Pulse.Notifications.csproj" />
     <ProjectReference Include="..\Pulse.StatusPages\Pulse.StatusPages.csproj" />
+    <ProjectReference Include="..\Pulse.Billing\Pulse.Billing.csproj" />
   </ItemGroup>
 
 </Project>

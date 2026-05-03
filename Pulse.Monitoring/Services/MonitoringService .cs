@@ -65,4 +65,10 @@ public class MonitoringService : IMonitoringService
             .Where(e => e.UserId == userId)
             .ToListAsync();
     }
+
+    public async Task<int> GetEndpointCountAsync(Guid userId)
+    {
+        return await _context.MonitoredEndpoints
+            .CountAsync(e => e.UserId == userId);
+    }
 }
