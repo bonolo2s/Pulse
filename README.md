@@ -142,17 +142,18 @@ Built SaaS-first, with the same reliability standards it monitors for.
 Pulse/
 ├── Pulse.sln
 │
-├── Pulse.Api/                        # Entry point — minimal API endpoints, DI wiring
+├── Pulse.Api/                             # Entry point — minimal API endpoints, DI wiring
 │   ├── Endpoints/
-│   │   ├── AuthEndpoints.cs
-│   │   ├── EndpointEndpoints.cs
-│   │   ├── CheckEndpoints.cs
-│   │   ├── AlertEndpoints.cs
+│   │   ├── IdentityEndpoints.cs
+│   │   ├── MonitoringEndpoints.cs
+│   │   ├── ObservabilityEndpoints.cs
+│   │   ├── NotificationsEndpoints.cs
+│   │   ├── StatusPagesEndpoints.cs
 │   │   └── BillingEndpoints.cs
 │   ├── Program.cs
 │   └── appsettings.json
 │
-├── Pulse.Auth/                        # User signup, login, session
+├── Pulse.Identity/                        # User signup, login, and permissions
 │   ├── Entities/
 │   │   └── User.cs
 │   ├── Commands/
@@ -167,9 +168,11 @@ Pulse/
 │   │   └── IAuthService.cs
 │   ├── Services/
 │   │   └── AuthService.cs
+│   ├── DataAccess/
+│   │   └── IdentityDbContext.cs
 │   └── DTOs/
 │
-├── Pulse.Endpoints/                   # Endpoint CRUD, config, tier limits
+├── Pulse.Monitoring/                      # Core engine — endpoint management + scheduled health checks
 │   ├── Entities/
 │   │   └── MonitoredEndpoint.cs
 │   ├── Commands/
@@ -178,28 +181,35 @@ Pulse/
 │   ├── Queries/
 │   │   └── GetEndpointsQuery.cs
 │   ├── Handlers/
+│   │   ├── AddEndpointHandler.cs
+│   │   └── RunHealthCheckHandler.cs
 │   ├── Interfaces/
-│   │   └── IEndpointRepository.cs
+│   │   └── IMonitoringService.cs
 │   ├── Services/
-│   │   └── EndpointService.cs
+│   │   └── MonitoringService.cs
+│   ├── DataAccess/
+│   │   └── MonitoringDbContext.cs
 │   └── DTOs/
 │
-├── Pulse.Checks/                      # Health check execution, latency, SSL inspection
+├── Pulse.Observability/                   # Uptime history, latency tracking, SSL certificate data
 │   ├── Entities/
 │   │   └── CheckResult.cs
 │   ├── Commands/
-│   │   └── RunCheckCommand.cs
+│   │   └── RecordCheckResultCommand.cs
 │   ├── Queries/
-│   │   └── GetCheckHistoryQuery.cs
+│   │   ├── GetUptimeHistoryQuery.cs
+│   │   └── GetLatencyTrendsQuery.cs
 │   ├── Handlers/
-│   │   └── RunCheckHandler.cs
+│   │   └── RecordCheckResultHandler.cs
 │   ├── Interfaces/
-│   │   └── ICheckService.cs
+│   │   └── IObservabilityService.cs
 │   ├── Services/
-│   │   └── CheckService.cs
+│   │   └── ObservabilityService.cs
+│   ├── DataAccess/
+│   │   └── ObservabilityDbContext.cs
 │   └── DTOs/
 │
-├── Pulse.Alerts/                      # Alert rules, notification dispatch
+├── Pulse.Notifications/                   # Alert rules and notification dispatch
 │   ├── Entities/
 │   │   └── AlertRule.cs
 │   ├── Commands/
@@ -207,40 +217,67 @@ Pulse/
 │   ├── Handlers/
 │   │   └── TriggerAlertHandler.cs
 │   ├── Interfaces/
-│   │   └── IAlertService.cs
+│   │   └── INotificationService.cs
 │   ├── Services/
-│   │   └── AlertService.cs
+│   │   └── NotificationService.cs
+│   ├── DataAccess/
+│   │   └── NotificationsDbContext.cs
 │   └── DTOs/
 │
-├── Pulse.Billing/                     # Free vs pro tier enforcement, subscription state
+├── Pulse.StatusPages/                     # Public and private system health presentation
+│   ├── Entities/
+│   │   └── StatusPage.cs
+│   ├── Commands/
+│   │   ├── CreateStatusPageCommand.cs
+│   │   └── UpdateStatusPageCommand.cs
+│   ├── Queries/
+│   │   ├── GetPublicStatusPageQuery.cs
+│   │   └── GetPrivateStatusPageQuery.cs
+│   ├── Handlers/
+│   │   ├── CreateStatusPageHandler.cs
+│   │   └── GetPublicStatusPageHandler.cs
+│   ├── Interfaces/
+│   │   └── IStatusPageService.cs
+│   ├── Services/
+│   │   └── StatusPageService.cs
+│   ├── DataAccess/
+│   │   └── StatusPagesDbContext.cs
+│   └── DTOs/
+│
+├── Pulse.Billing/                         # Free vs Pro tier enforcement and subscription state
 │   ├── Entities/
 │   │   └── Subscription.cs
 │   ├── Queries/
 │   │   └── GetSubscriptionQuery.cs
+│   ├── Handlers/
+│   │   └── GetSubscriptionHandler.cs
 │   ├── Interfaces/
 │   │   └── IBillingService.cs
 │   ├── Services/
 │   │   └── BillingService.cs
+│   ├── DataAccess/
+│   │   └── BillingDbContext.cs
 │   └── DTOs/
 │
-├── Pulse.Infrastructure/              # EF config, repositories, Redis, SNS, SES clients
+├── Pulse.Infrastructure/                  # Redis, SNS, SES clients, shared EF config
 │   ├── Persistence/
 │   │   └── PulseDbContext.cs
-│   ├── Repositories/
 │   ├── Redis/
 │   ├── Messaging/
 │   │   └── SnsAlertPublisher.cs
 │   └── Migrations/
 │
-├── Pulse.Shared/                      # Shared contracts, base classes, result types
+├── Pulse.Shared/                          # Shared contracts, base classes, result types
 │   ├── Results/
 │   └── Interfaces/
 │
 └── Pulse.Tests/
-    ├── Auth/
-    ├── Endpoints/
-    ├── Checks/
-    └── Alerts/
+    ├── Identity/
+    ├── Monitoring/
+    ├── Observability/
+    ├── Notifications/
+    ├── StatusPages/
+    └── Billing/
 ```
 
 ---
