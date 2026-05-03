@@ -4,5 +4,5 @@ public enum AlertChannel
 {
     Email,
     Slack,
-    Webhook
+    Sms
 }

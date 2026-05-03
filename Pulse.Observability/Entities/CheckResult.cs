@@ -1,4 +1,6 @@
-﻿namespace Pulse.Observability.Entities;
+﻿using Pulse.Shared.Enums;
+
+namespace Pulse.Observability.Entities;
 
 public class CheckResult
 {

@@ -1,12 +1,14 @@
-﻿namespace Pulse.Notifications.Entities;
+﻿using Pulse.Notifications.Entities;
 
-public class AlertLog
+namespace Pulse.Notifications.DTOs;
+
+public class AlertLogResponse
 {
     public Guid Id { get; set; }
     public Guid AlertRuleId { get; set; }
     public Guid EndpointId { get; set; }
-    public AlertChannel Channel { get; set; } // Email | Slack | Sms
-    public AlertType Type { get; set; } // Downtime | Degraded | Recovery | Latency | SslExpiry
+    public AlertChannel Channel { get; set; }
+    public AlertType Type { get; set; }
     public string Message { get; set; } = string.Empty;
     public bool Delivered { get; set; }
     public bool IsAcknowledged { get; set; }

@@ -1,12 +1,10 @@
-﻿using Pulse.Observability.Entities;
-
-namespace Pulse.Observability.DTOs;
+﻿namespace Pulse.Observability.DTOs;
 
 public class CheckResultResponse
 {
     public Guid Id { get; set; }
     public Guid EndpointId { get; set; }
-    public EndpointStatus Status { get; set; }
+    public Shared.Enums.EndpointStatus Status { get; set; }
     public int StatusCode { get; set; }
     public long LatencyMs { get; set; }
     public string? SslIssuer { get; set; }
