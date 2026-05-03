@@ -8,7 +8,7 @@ Pulse started as an internal frustration — manually checking whether services 
 
 Pulse monitors your endpoints around the clock, measures latency, inspects SSL certificates, tracks uptime history, and alerts your team the moment something degrades or goes down — before your users notice.
 
-Built SaaS-first, with the same reliability standards it monitors for.
+Started as my own internal dev tooling — then built with a SaaS mindset from the ground up, holding itself to the same reliability standards it monitors for.
 
 **Free tier:** Monitor up to 3 endpoints with basic email alerts.
 **Pro tier:** Unlimited endpoints, sub-minute check intervals, SSL monitoring, Slack/webhook alerts, status pages, and full uptime analytics.
