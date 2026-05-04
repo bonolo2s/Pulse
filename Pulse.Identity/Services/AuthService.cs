@@ -10,11 +10,15 @@ public class AuthService : IAuthService
 {
     private readonly IdentityDbContext _context;
     private readonly ISubscriptionCreator _subscriptionCreator;
+    private readonly ITokenService _tokenService;
+    private readonly IRefreshTokenService _refreshTokenService;
 
-    public AuthService(IdentityDbContext context, ISubscriptionCreator subscriptionCreator)
+    public AuthService(IdentityDbContext context, ISubscriptionCreator subscriptionCreator, ITokenService tokenService, IRefreshTokenService refreshTokenService)
     {
         _context = context;
         _subscriptionCreator = subscriptionCreator;
+        _tokenService = tokenService;
+        _refreshTokenService = refreshTokenService;
     }
 
     public async Task<User> RegisterUserAsync(User user, string password)
@@ -56,23 +60,14 @@ public class AuthService : IAuthService
             ?? throw new UnauthorizedAccessException("Invalid email or password.");
 
         var passwordValid = BCrypt.Net.BCrypt.Verify(password, user.PasswordHash);
-
         if (!passwordValid)
             throw new UnauthorizedAccessException("Invalid email or password.");
 
-        // JWT generation — wating for infra
-        return new AuthResponse
-        {
-            Token = $"JWT_TOKEN_PLACEHOLDER_{user.Id}",
-            ExpiresAt = DateTime.UtcNow.AddMinutes(15),
-            User = new AuthUserResponse
-            {
-                Id = user.Id,
-                Email = user.Email,
-                DisplayName = user.FullName,
-                Tier = user.Plan
-            }
-        };
+        var authResponse = _tokenService.GenerateToken(user);
+        var refreshToken = await _refreshTokenService.GenerateRefreshToken(user);
+        authResponse.RefreshToken = refreshToken.Token;
+
+        return authResponse;
     }
 
     public async Task<User> GetCurrentUserAsync(Guid userId)

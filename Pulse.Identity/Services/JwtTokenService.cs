@@ -2,12 +2,11 @@
 using Microsoft.IdentityModel.Tokens;
 using Pulse.Identity.DTOs;
 using Pulse.Identity.Interfaces;
-using Pulse.Shared.Interfaces;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
 
-namespace Pulse.Infrastructure.Security
+namespace Pulse.Identity.Services
 {
     public class JwtTokenService : ITokenService
     {

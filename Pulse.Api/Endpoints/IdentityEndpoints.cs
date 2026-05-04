@@ -105,5 +105,23 @@ public static class IdentityEndpoints
         .WithName("DeleteAccount")
         .WithTags("Identity")
         .WithOpenApi();
+
+        group.MapPost("/refresh", async (RefreshTokenRequest request, IMediator mediator) =>
+        {
+            var response = await mediator.Send(new RefreshTokenCommand(request.UserId, request.RefreshToken));
+            return Results.Ok(response);
+        })
+        .WithName("RefreshToken")
+        .WithTags("Identity")
+        .WithOpenApi();
+
+        group.MapPost("/logout", async (RevokeRefreshTokenRequest request, IMediator mediator) =>
+        {
+            await mediator.Send(new RevokeRefreshTokenCommand(request.UserId, request.RefreshToken));
+            return Results.NoContent();
+        })
+        .WithName("Logout")
+        .WithTags("Identity")
+        .WithOpenApi();
     }
 }

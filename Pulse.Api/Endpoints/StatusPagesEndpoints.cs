@@ -1,7 +1,6 @@
 ﻿using MediatR;
 using Pulse.StatusPages.Commands;
 using Pulse.StatusPages.DTOs;
-using Pulse.StatusPages.Entities;
 using Pulse.StatusPages.Queries;
 
 namespace Pulse.Api.Endpoints;

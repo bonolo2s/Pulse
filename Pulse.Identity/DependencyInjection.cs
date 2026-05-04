@@ -17,6 +17,8 @@ public static class DependencyInjection
             cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
 
         services.AddScoped<IAuthService, AuthService>();
+        services.AddScoped<ITokenService, JwtTokenService>();
+        services.AddScoped<IRefreshTokenService, RefreshTokenService>();
 
         return services;
     }

@@ -7,6 +7,7 @@ public class IdentityDbContext : DbContext
     public IdentityDbContext(DbContextOptions<IdentityDbContext> options) : base(options) { }
 
     public DbSet<User> Users { get; set; } = null!;
+    public DbSet<RefreshToken> RefreshTokens { get; set; } = null!;
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -19,6 +20,18 @@ public class IdentityDbContext : DbContext
             entity.Property(e => e.Plan).IsRequired().HasMaxLength(50);
             entity.Property(e => e.CreatedAt).IsRequired();
             entity.HasIndex(e => e.Email).IsUnique();
+        });
+
+        modelBuilder.Entity<RefreshToken>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Token).IsRequired();
+            entity.Property(e => e.ExpiresAt).IsRequired();
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.HasOne<User>()
+                  .WithMany()
+                  .HasForeignKey(e => e.UserId)
+                  .OnDelete(DeleteBehavior.Cascade);
         });
     }
 }
