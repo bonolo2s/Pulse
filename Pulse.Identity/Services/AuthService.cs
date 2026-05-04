@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pulse.Identity.DataAccess;
+using Pulse.Identity.DTOs;
 using Pulse.Identity.Interfaces;
 using Pulse.Shared.Interfaces;
 
@@ -48,7 +49,7 @@ public class AuthService : IAuthService
         return user;
     }
 
-    public async Task<string> LoginUserAsync(string email, string password)
+    public async Task<AuthResponse> LoginUserAsync(string email, string password)
     {
         var user = await _context.Users
             .FirstOrDefaultAsync(u => u.Email == email && u.IsActive)
@@ -59,8 +60,19 @@ public class AuthService : IAuthService
         if (!passwordValid)
             throw new UnauthorizedAccessException("Invalid email or password.");
 
-        // dont fortet the JWT boy
-        return $"JWT_TOKEN_PLACEHOLDER_{user.Id}";
+        // JWT generation — wating for infra
+        return new AuthResponse
+        {
+            Token = $"JWT_TOKEN_PLACEHOLDER_{user.Id}",
+            ExpiresAt = DateTime.UtcNow.AddMinutes(15),
+            User = new AuthUserResponse
+            {
+                Id = user.Id,
+                Email = user.Email,
+                DisplayName = user.FullName,
+                Tier = user.Plan
+            }
+        };
     }
 
     public async Task<User> GetCurrentUserAsync(Guid userId)
