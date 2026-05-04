@@ -1,5 +1,6 @@
 using Pulse.Api.Endpoints;
 using Pulse.Billing;
+using Pulse.Identity;
 using Pulse.Monitoring;
 using Pulse.Notifications;
 using Pulse.Observability;
@@ -8,6 +9,7 @@ using Pulse.StatusPages;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddOpenApi();
+builder.Services.AddIdentity(builder.Configuration.GetConnectionString("DefaultConnection")!);
 builder.Services.AddMonitoring(builder.Configuration.GetConnectionString("DefaultConnection")!);
 builder.Services.AddObservability(builder.Configuration.GetConnectionString("DefaultConnection")!);
 builder.Services.AddNotifications(builder.Configuration.GetConnectionString("DefaultConnection")!);
@@ -18,6 +20,7 @@ var app = builder.Build();
 
 app.MapOpenApi();
 app.UseHttpsRedirection();
+app.MapIdentityEndpoints();
 app.MapMonitoringEndpoints();
 app.MapObservabilityEndpoints();
 app.MapNotificationsEndpoints();
