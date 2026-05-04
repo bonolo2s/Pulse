@@ -6,7 +6,7 @@ using Pulse.Shared.Interfaces;
 
 namespace Pulse.Billing.Services;
 
-public class BillingService : IBillingService, IBillingValidator
+public class BillingService : IBillingService, IBillingValidator, ISubscriptionCreator
 {
     private readonly BillingDbContext _context;
 
@@ -104,5 +104,21 @@ public class BillingService : IBillingService, IBillingValidator
 
         if (currentEndpointCount >= subscription.EndpointLimit)
             throw new InvalidOperationException($"Endpoint limit of {subscription.EndpointLimit} reached. Upgrade to Pro.");
+    }
+
+    public async Task CreateSubscriptionAsync(Guid userId)
+    {
+        var subscription = new Subscription
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Plan = "Free",
+            EndpointLimit = 3,
+            StartedAt = DateTime.UtcNow,
+            IsActive = true
+        };
+
+        _context.Subscriptions.Add(subscription);
+        await _context.SaveChangesAsync();
     }
 }
