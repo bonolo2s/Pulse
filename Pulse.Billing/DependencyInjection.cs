@@ -19,6 +19,7 @@ public static class DependencyInjection
 
         services.AddScoped<IBillingService, BillingService>();
         services.AddScoped<IBillingValidator, BillingService>();
+        services.AddScoped<ISubscriptionCreator, BillingService>();
 
         return services;
     }
