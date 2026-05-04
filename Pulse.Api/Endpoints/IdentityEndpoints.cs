@@ -37,17 +37,14 @@ public static class IdentityEndpoints
 
         group.MapPost("/login", async (LoginUserRequest request, IMediator mediator) =>
         {
-            var token = await mediator.Send(new LoginUserCommand(request.Email, request.Password));
+            var response = await mediator.Send(new LoginUserCommand(request.Email, request.Password));
 
-            return Results.Ok(new AuthResponse
-            {
-                Token = token,
-                UserId = Guid.Empty// i need to revise this
-            });
+            return Results.Ok(response);
         })
         .WithName("LoginUser")
         .WithTags("Identity")
         .WithOpenApi();
+
 
         group.MapGet("/{userId:guid}", async (Guid userId, IMediator mediator) =>
         {
