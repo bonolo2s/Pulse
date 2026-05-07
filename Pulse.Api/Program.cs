@@ -5,6 +5,7 @@ using Pulse.Monitoring;
 using Pulse.Notifications;
 using Pulse.Observability;
 using Pulse.StatusPages;
+using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,12 @@ var app = builder.Build();
 
 app.MapOpenApi();
 app.UseHttpsRedirection();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapScalarApiReference();
+}
+
 app.MapIdentityEndpoints();
 app.MapMonitoringEndpoints();
 app.MapObservabilityEndpoints();
