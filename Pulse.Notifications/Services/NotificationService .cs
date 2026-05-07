@@ -4,16 +4,19 @@ using Pulse.Notifications.Entities;
 using Pulse.Notifications.Interfaces;
 using Pulse.Shared.DTOs;
 using Pulse.Shared.Enums;
+using Pulse.Shared.Interfaces;
 
 namespace Pulse.Notifications.Services;
 
 public class NotificationService : INotificationService
 {
     private readonly NotificationsDbContext _context;
+    private readonly ISnsPublisher _snsPublisher;
 
-    public NotificationService(NotificationsDbContext context)
+    public NotificationService(NotificationsDbContext context, ISnsPublisher snsPublisher)
     {
         _context = context;
+        _snsPublisher = snsPublisher;
     }
 
     public async Task TriggerAlertAsync(HealthCheckResult result)
@@ -55,21 +58,18 @@ public class NotificationService : INotificationService
             _context.AlertLogs.Add(log);
             await _context.SaveChangesAsync();
 
-            switch (rule.Channel)
+            await _snsPublisher.PublishAlertAsync(new AlertNotificationDto
             {
-                case AlertChannel.Email:
-                    await DispatchEmailNotificationAsync(log);
-                    break;
-                case AlertChannel.Slack:
-                    await DispatchSlackNotificationAsync(log);
-                    break;
-                case AlertChannel.Sms:
-                    await DispatchSmsNotificationAsync(log);
-                    break;
-            }
+                EndpointId = log.EndpointId,
+                Message = log.Message,
+                Channel = log.Channel.ToString(),
+                SentAt = log.SentAt
+            });
+
+            log.Delivered = true;
+            await _context.SaveChangesAsync();
         }
     }
-
     public async Task DispatchEmailNotificationAsync(AlertLog log)
     {
         // AWS SES integration — wired in Infrastructure
