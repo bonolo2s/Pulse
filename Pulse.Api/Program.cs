@@ -8,7 +8,6 @@ using Pulse.StatusPages;
 using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
-
 builder.Services.AddOpenApi();
 builder.Services.AddIdentity(builder.Configuration.GetConnectionString("DefaultConnection")!);
 builder.Services.AddMonitoring(builder.Configuration.GetConnectionString("DefaultConnection")!);
@@ -16,22 +15,14 @@ builder.Services.AddObservability(builder.Configuration.GetConnectionString("Def
 builder.Services.AddNotifications(builder.Configuration.GetConnectionString("DefaultConnection")!);
 builder.Services.AddStatusPages(builder.Configuration.GetConnectionString("DefaultConnection")!);
 builder.Services.AddBilling(builder.Configuration.GetConnectionString("DefaultConnection")!);
-
 var app = builder.Build();
-
 app.MapOpenApi();
+app.MapScalarApiReference();
 app.UseHttpsRedirection();
-
-if (app.Environment.IsDevelopment())
-{
-    app.MapScalarApiReference();
-}
-
 app.MapIdentityEndpoints();
 app.MapMonitoringEndpoints();
 app.MapObservabilityEndpoints();
 app.MapNotificationsEndpoints();
 app.MapStatusPagesEndpoints();
 app.MapBillingEndpoints();
-
 app.Run();
