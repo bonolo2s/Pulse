@@ -1,4 +1,5 @@
-﻿using Amazon.SimpleNotificationService;
+﻿using Amazon.SimpleEmail;
+using Amazon.SimpleNotificationService;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Pulse.Infrastructure.Messaging;
@@ -11,11 +12,20 @@ public static class DependencyInjection
     public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
     {
         services.AddAWSService<IAmazonSimpleNotificationService>();
+        services.AddAWSService<IAmazonSimpleEmailService>();
+
         services.AddSingleton<ISnsPublisher>(sp =>
         {
             var sns = sp.GetRequiredService<IAmazonSimpleNotificationService>();
-            var topicArn = configuration["AWS__SNS__ALERTTOPICARN"]!;// where to
+            var topicArn = configuration["AWS__SNS__ALERTTOPICARN"]!;
             return new SnsAlertPublisher(sns, topicArn);
+        });
+
+        services.AddSingleton<IEmailSender>(sp =>
+        {
+            var ses = sp.GetRequiredService<IAmazonSimpleEmailService>();
+            var fromAddress = configuration["AWS__SES__FROMADDRESS"]!;
+            return new SesEmailSender(ses, fromAddress);
         });
 
         return services;
