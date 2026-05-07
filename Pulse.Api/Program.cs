@@ -1,6 +1,7 @@
 using Pulse.Api.Endpoints;
 using Pulse.Billing;
 using Pulse.Identity;
+using Pulse.Infrastructure;
 using Pulse.Monitoring;
 using Pulse.Notifications;
 using Pulse.Observability;
@@ -9,6 +10,7 @@ using Scalar.AspNetCore;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
+builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddIdentity(builder.Configuration.GetConnectionString("DefaultConnection")!);
 builder.Services.AddMonitoring(builder.Configuration.GetConnectionString("DefaultConnection")!);
 builder.Services.AddObservability(builder.Configuration.GetConnectionString("DefaultConnection")!);

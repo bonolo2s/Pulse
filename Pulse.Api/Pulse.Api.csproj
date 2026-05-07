@@ -25,6 +25,7 @@
     <ProjectReference Include="..\Pulse.StatusPages\Pulse.StatusPages.csproj" />
     <ProjectReference Include="..\Pulse.Billing\Pulse.Billing.csproj" />
     <ProjectReference Include="..\Pulse.Identity\Pulse.Identity.csproj" />
+    <ProjectReference Include="..\Pulse.Infrastructure\Pulse.Infrastructure.csproj" />
   </ItemGroup>
 
 </Project>

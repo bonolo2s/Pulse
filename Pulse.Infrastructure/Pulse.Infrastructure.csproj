@@ -12,4 +12,14 @@
     <Folder Include="Persistence\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="4.0.3.36" />
+    <PackageReference Include="AWSSDK.SimpleNotificationService" Version="4.0.2.30" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.7" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Pulse.Shared\Pulse.Shared.csproj" />
+  </ItemGroup>
+
 </Project>
