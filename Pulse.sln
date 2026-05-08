@@ -21,6 +21,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pulse.Infrastructure", "Pul
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pulse.Shared", "Pulse.Shared\Pulse.Shared.csproj", "{A33CA7B7-2302-495E-B0FB-4A2A00B53206}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Pulse.Lambda", "Pulse.Lambda\Pulse.Lambda.csproj", "{EF8B424F-AD04-46E6-A343-98E51AD1648C}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -63,6 +65,10 @@ Global
 		{A33CA7B7-2302-495E-B0FB-4A2A00B53206}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A33CA7B7-2302-495E-B0FB-4A2A00B53206}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A33CA7B7-2302-495E-B0FB-4A2A00B53206}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EF8B424F-AD04-46E6-A343-98E51AD1648C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EF8B424F-AD04-46E6-A343-98E51AD1648C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EF8B424F-AD04-46E6-A343-98E51AD1648C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EF8B424F-AD04-46E6-A343-98E51AD1648C}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
