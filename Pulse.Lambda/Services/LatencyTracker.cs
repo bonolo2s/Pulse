@@ -1,12 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Diagnostics;
 
-namespace Pulse.Lambda.Services
+namespace Pulse.Lambda.Services;
+
+public class LatencyTracker
 {
-    internal class LatencyTracker
+    public async Task<long> MeasureAsync(string url, HttpClient httpClient)
     {
+        var stopwatch = Stopwatch.StartNew();
+
+        await httpClient.GetAsync(url);
+
+        stopwatch.Stop();
+
+        return stopwatch.ElapsedMilliseconds;
     }
 }
