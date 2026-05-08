@@ -19,7 +19,7 @@ public class NotificationService : INotificationService
         _snsPublisher = snsPublisher;
     }
 
-    public async Task TriggerAlertAsync(HealthCheckResult result)
+    public async Task TriggerAlertAsync(HealthCheckResult result) // from who?
     {
         var rules = await _context.AlertRules
             .Where(r => r.IsActive)

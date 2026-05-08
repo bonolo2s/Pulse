@@ -7,7 +7,7 @@ public class SslInspector
 {
     private const int ExpiryThresholdDays = 7;
 
-    public async Task<(bool IsExpiringSoon, DateTime ExpiryDate)> InspectAsync(string url)
+    public async Task<(bool IsExpiringSoon, DateTime ExpiryDate, string Issuer)> InspectAsync(string url)
     {
         var uri = new Uri(url);
 
@@ -19,8 +19,9 @@ public class SslInspector
 
         var certificate = sslStream.RemoteCertificate!;
         var expiryDate = DateTime.Parse(certificate.GetExpirationDateString());
+        var issuer = certificate.Issuer;
         var isExpiringSoon = expiryDate <= DateTime.UtcNow.AddDays(ExpiryThresholdDays);
 
-        return (isExpiringSoon, expiryDate);
+        return (isExpiringSoon, expiryDate, issuer);
     }
 }
