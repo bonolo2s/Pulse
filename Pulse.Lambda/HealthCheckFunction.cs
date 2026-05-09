@@ -28,7 +28,7 @@ public class HealthCheckFunction
         await _snsPublisher.PublishAlertAsync(new AlertNotificationDto
         {
             EndpointId = result.EndpointId,
-            Message = JsonSerializer.Serialize(result),
+            Result = result,
             SentAt = DateTime.UtcNow
         });
     }
