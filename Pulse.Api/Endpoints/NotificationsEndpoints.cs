@@ -13,9 +13,9 @@ public static class NotificationsEndpoints
     {
         var group = app.MapGroup("/api/notifications");
 
-        group.MapPost("/trigger", async (HealthCheckResult result, IMediator mediator) =>
+        group.MapPost("/trigger", async (AlertNotificationDto dto, IMediator mediator) =>
         {
-            await mediator.Send(new TriggerAlertCommand(result));
+            await mediator.Send(new TriggerAlertCommand(dto.Result));
             return Results.NoContent();
         })
         .WithName("TriggerAlert") // fired by lambda when  down
