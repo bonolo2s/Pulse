@@ -3,6 +3,7 @@ using Pulse.Observability.Commands;
 using Pulse.Observability.DTOs;
 using Pulse.Observability.Entities;
 using Pulse.Observability.Queries;
+using Pulse.Shared.DTOs;
 
 namespace Pulse.Api.Endpoints;
 
@@ -12,20 +13,19 @@ public static class ObservabilityEndpoints
     {
         var group = app.MapGroup("/api/observability");
 
-        group.MapPost("/results", async (RecordCheckResultRequest request, IMediator mediator) =>
+        group.MapPost("/results", async (AlertNotificationDto dto, IMediator mediator) =>
         {
             var result = new CheckResult
             {
-                EndpointId = request.EndpointId,
-                Status = request.Status,
-                StatusCode = request.StatusCode,
-                LatencyMs = request.LatencyMs,
-                SslIssuer = request.SslIssuer,
-                SslExpiresAt = request.SslExpiresAt,
-                SslDaysRemaining = request.SslDaysRemaining,
-                ErrorMessage = request.ErrorMessage
+                EndpointId = dto.Result.EndpointId,
+                Status = dto.Result.Status,
+                StatusCode = dto.Result.StatusCode,
+                LatencyMs = dto.Result.LatencyMs,
+                SslIssuer = dto.Result.SslIssuer,
+                SslExpiresAt = dto.Result.SslExpiresAt,
+                SslDaysRemaining = dto.Result.SslDaysRemaining,
+                ErrorMessage = dto.Result.ErrorMessage
             };
-
             await mediator.Send(new RecordCheckResultCommand(result));
             return Results.NoContent();
         })
