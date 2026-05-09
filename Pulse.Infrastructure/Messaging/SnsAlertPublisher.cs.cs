@@ -23,7 +23,15 @@ public class SnsAlertPublisher : ISnsPublisher
         {
             TopicArn = _topicArn,
             Message = JsonSerializer.Serialize(message),
-            Subject = $"Pulse Alert: Endpoint {message.EndpointId}"
+            Subject = $"Pulse Alert: Endpoint {message.EndpointId}",
+            MessageAttributes = new Dictionary<string, MessageAttributeValue>
+            {
+                ["status"] = new MessageAttributeValue
+                {
+                    DataType = "String",
+                    StringValue = message.Result.Status.ToString()
+                }
+            }
         };
 
         await _sns.PublishAsync(request);
