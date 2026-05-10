@@ -11,7 +11,7 @@ public static class StatusPagesEndpoints
     {
         var group = app.MapGroup("/api/statuspages");
 
-        group.MapPost("/", async (CreateStatusPageRequest request, IMediator mediator) =>
+        group.MapPost("/create-status-page", async (CreateStatusPageRequest request, IMediator mediator) =>
         {
             var statusPage = new StatusPage
             {
@@ -34,9 +34,10 @@ public static class StatusPagesEndpoints
         })
         .WithName("CreateStatusPage")
         .WithTags("StatusPages")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
 
-        group.MapPut("/{id:guid}", async (Guid id, UpdateStatusPageRequest request, IMediator mediator) =>
+        group.MapPut("/update-status-page/{id:guid}", async (Guid id, UpdateStatusPageRequest request, IMediator mediator) =>
         {
             var statusPage = new StatusPage
             {
@@ -58,18 +59,20 @@ public static class StatusPagesEndpoints
         })
         .WithName("UpdateStatusPage")
         .WithTags("StatusPages")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
 
-        group.MapDelete("/{id:guid}", async (Guid id, IMediator mediator) =>
+        group.MapDelete("/delete-status-page/{id:guid}", async (Guid id, IMediator mediator) =>
         {
             await mediator.Send(new DeleteStatusPageCommand(id));
             return Results.NoContent();
         })
         .WithName("DeleteStatusPage")
         .WithTags("StatusPages")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
 
-        group.MapPost("/endpoints", async (AddEndpointToStatusPageRequest request, IMediator mediator) =>
+        group.MapPost("/add-endpoint", async (AddEndpointToStatusPageRequest request, IMediator mediator) =>
         {
             var statusPageEndpoint = new StatusPageEndpoint
             {
@@ -92,16 +95,18 @@ public static class StatusPagesEndpoints
         })
         .WithName("AddEndpointToStatusPage")
         .WithTags("StatusPages")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
 
-        group.MapDelete("/endpoints/{statusPageEndpointId:guid}", async (Guid statusPageEndpointId, IMediator mediator) =>
+        group.MapDelete("/remove-endpoint/{statusPageEndpointId:guid}", async (Guid statusPageEndpointId, IMediator mediator) =>
         {
             await mediator.Send(new RemoveEndpointFromStatusPageCommand(statusPageEndpointId));
             return Results.NoContent();
         })
         .WithName("RemoveEndpointFromStatusPage")
         .WithTags("StatusPages")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
 
         group.MapGet("/public/{slug}", async (string slug, IMediator mediator) =>
         {
@@ -129,7 +134,7 @@ public static class StatusPagesEndpoints
         .WithTags("StatusPages")
         .WithOpenApi();
 
-        group.MapGet("/private/{statusPageId:guid}", async (Guid statusPageId, IMediator mediator) =>
+        group.MapGet("/get-private/{statusPageId:guid}", async (Guid statusPageId, IMediator mediator) =>
         {
             var result = await mediator.Send(new GetPrivateStatusPageQuery(statusPageId));
 
@@ -153,6 +158,7 @@ public static class StatusPagesEndpoints
         })
         .WithName("GetPrivateStatusPage")
         .WithTags("StatusPages")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
     }
 }
