@@ -3,20 +3,17 @@ using Pulse.Billing.Commands;
 using Pulse.Billing.DTOs;
 using Pulse.Billing.Entities;
 using Pulse.Billing.Queries;
-
 namespace Pulse.Api.Endpoints;
-
 public static class BillingEndpoints
 {
     public static void MapBillingEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api/billing");
 
-        group.MapPost("/subscriptions/{userId:guid}", async (Guid userId, IMediator mediator) =>
+        group.MapPost("/create-subscription/{userId:guid}", async (Guid userId, IMediator mediator) =>
         {
             var subscription = new Subscription { UserId = userId };
             var result = await mediator.Send(new CreateSubscriptionCommand(subscription));
-
             return Results.Created($"/api/billing/subscriptions/{result.Id}", new SubscriptionResponse
             {
                 Id = result.Id,
@@ -30,12 +27,12 @@ public static class BillingEndpoints
         })
         .WithName("CreateSubscription")
         .WithTags("Billing")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
 
-        group.MapPut("/subscriptions/{userId:guid}/upgrade", async (Guid userId, IMediator mediator) =>
+        group.MapPut("/upgrade-to-pro/{userId:guid}", async (Guid userId, IMediator mediator) =>
         {
             var result = await mediator.Send(new UpgradeToProCommand(userId));
-
             return Results.Ok(new SubscriptionResponse
             {
                 Id = result.Id,
@@ -49,21 +46,22 @@ public static class BillingEndpoints
         })
         .WithName("UpgradeToPro")
         .WithTags("Billing")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
 
-        group.MapPut("/subscriptions/{userId:guid}/cancel", async (Guid userId, IMediator mediator) =>
+        group.MapPut("/cancel-subscription/{userId:guid}", async (Guid userId, IMediator mediator) =>
         {
             await mediator.Send(new CancelSubscriptionCommand(userId));
             return Results.NoContent();
         })
         .WithName("CancelSubscription")
         .WithTags("Billing")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
 
-        group.MapGet("/subscriptions/{userId:guid}", async (Guid userId, IMediator mediator) =>
+        group.MapGet("/get-subscription/{userId:guid}", async (Guid userId, IMediator mediator) =>
         {
             var result = await mediator.Send(new GetSubscriptionQuery(userId));
-
             return Results.Ok(new SubscriptionResponse
             {
                 Id = result.Id,
@@ -77,12 +75,12 @@ public static class BillingEndpoints
         })
         .WithName("GetSubscription")
         .WithTags("Billing")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
 
-        group.MapGet("/invoices/{userId:guid}", async (Guid userId, IMediator mediator) =>
+        group.MapGet("/get-invoices/{userId:guid}", async (Guid userId, IMediator mediator) =>
         {
             var results = await mediator.Send(new GetBillingHistoryQuery(userId));
-
             return Results.Ok(results.Select(i => new InvoiceResponse
             {
                 Id = i.Id,
@@ -98,9 +96,10 @@ public static class BillingEndpoints
         })
         .WithName("GetBillingHistory")
         .WithTags("Billing")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
 
-        group.MapPost("/webhooks/payment", async (SyncPaymentWebhookRequest request, IMediator mediator) => //webhook tirggered
+        group.MapPost("/webhooks/payment", async (SyncPaymentWebhookRequest request, IMediator mediator) => //webhook triggered
         {
             await mediator.Send(new SyncPaymentWebhookCommand(request.PaymentReference, request.Status));
             return Results.NoContent();
