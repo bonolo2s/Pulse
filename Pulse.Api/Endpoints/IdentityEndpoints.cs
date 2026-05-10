@@ -45,7 +45,6 @@ public static class IdentityEndpoints
         .WithTags("Identity")
         .WithOpenApi();
 
-
         group.MapGet("/{userId:guid}", async (Guid userId, IMediator mediator) =>
         {
             var result = await mediator.Send(new GetCurrentUserQuery(userId));
@@ -62,7 +61,8 @@ public static class IdentityEndpoints
         })
         .WithName("GetCurrentUser")
         .WithTags("Identity")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
 
         group.MapPut("/{userId:guid}", async (Guid userId, UpdateUserRequest request, IMediator mediator) =>
         {
@@ -86,7 +86,8 @@ public static class IdentityEndpoints
         })
         .WithName("UpdateUser")
         .WithTags("Identity")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
 
         group.MapPatch("/{userId:guid}/password", async (Guid userId, ChangePasswordRequest request, IMediator mediator) =>
         {
@@ -95,7 +96,8 @@ public static class IdentityEndpoints
         })
         .WithName("ChangePassword")
         .WithTags("Identity")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
 
         group.MapDelete("/{userId:guid}", async (Guid userId, IMediator mediator) =>
         {
@@ -104,7 +106,8 @@ public static class IdentityEndpoints
         })
         .WithName("DeleteAccount")
         .WithTags("Identity")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
 
         group.MapPost("/refresh", async (RefreshTokenRequest request, IMediator mediator) =>
         {
@@ -113,7 +116,8 @@ public static class IdentityEndpoints
         })
         .WithName("RefreshToken")
         .WithTags("Identity")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
 
         group.MapPost("/logout", async (RevokeRefreshTokenRequest request, IMediator mediator) =>
         {
@@ -122,6 +126,7 @@ public static class IdentityEndpoints
         })
         .WithName("Logout")
         .WithTags("Identity")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
     }
 }
