@@ -45,7 +45,7 @@ public static class IdentityEndpoints
         .WithTags("Identity")
         .WithOpenApi();
 
-        group.MapGet("/{userId:guid}", async (Guid userId, IMediator mediator) =>
+        group.MapGet("/get-user/{userId:guid}", async (Guid userId, IMediator mediator) =>
         {
             var result = await mediator.Send(new GetCurrentUserQuery(userId));
 
@@ -64,7 +64,7 @@ public static class IdentityEndpoints
         .WithOpenApi()
         .RequireAuthorization();
 
-        group.MapPut("/{userId:guid}", async (Guid userId, UpdateUserRequest request, IMediator mediator) =>
+        group.MapPut("/update-user/{userId:guid}", async (Guid userId, UpdateUserRequest request, IMediator mediator) =>
         {
             var updated = new User
             {
@@ -89,7 +89,7 @@ public static class IdentityEndpoints
         .WithOpenApi()
         .RequireAuthorization();
 
-        group.MapPatch("/{userId:guid}/password", async (Guid userId, ChangePasswordRequest request, IMediator mediator) =>
+        group.MapPatch("/change-password/{userId:guid}", async (Guid userId, ChangePasswordRequest request, IMediator mediator) =>
         {
             await mediator.Send(new ChangePasswordCommand(userId, request.CurrentPassword, request.NewPassword));
             return Results.NoContent();
@@ -99,7 +99,7 @@ public static class IdentityEndpoints
         .WithOpenApi()
         .RequireAuthorization();
 
-        group.MapDelete("/{userId:guid}", async (Guid userId, IMediator mediator) =>
+        group.MapDelete("/delete-account/{userId:guid}", async (Guid userId, IMediator mediator) =>
         {
             await mediator.Send(new DeleteAccountCommand(userId));
             return Results.NoContent();
@@ -109,7 +109,7 @@ public static class IdentityEndpoints
         .WithOpenApi()
         .RequireAuthorization();
 
-        group.MapPost("/refresh", async (RefreshTokenRequest request, IMediator mediator) =>
+        group.MapPost("/refresh-token", async (RefreshTokenRequest request, IMediator mediator) =>
         {
             var response = await mediator.Send(new RefreshTokenCommand(request.UserId, request.RefreshToken));
             return Results.Ok(response);
