@@ -2,16 +2,13 @@
 using Pulse.Monitoring.Commands;
 using Pulse.Monitoring.DTOs;
 using Pulse.Monitoring.Queries;
-
 namespace Pulse.Api.Endpoints;
-
 public static class MonitoringEndpoints
 {
     public static void MapMonitoringEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api/monitoring");
-
-        group.MapPost("/endpoints", async (AddEndpointRequest request, IMediator mediator) =>
+        group.MapPost("/add-endpoint", async (AddEndpointRequest request, IMediator mediator) =>
         {
             var endpoint = new MonitoredEndpoint
             {
@@ -22,9 +19,7 @@ public static class MonitoringEndpoints
                 IntervalSeconds = request.IntervalSeconds,
                 TimeoutMs = request.TimeoutMs
             };
-
             var result = await mediator.Send(new AddEndpointCommand(endpoint));
-
             return Results.Created($"/api/monitoring/endpoints/{result.Id}", new EndpointResponse
             {
                 Id = result.Id,
@@ -40,9 +35,10 @@ public static class MonitoringEndpoints
         })
         .WithName("AddEndpoint")
         .WithTags("Monitoring")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
 
-        group.MapPut("/endpoints/{id:guid}", async (Guid id, EditEndpointRequest request, IMediator mediator) =>
+        group.MapPut("/edit-endpoint/{id:guid}", async (Guid id, EditEndpointRequest request, IMediator mediator) =>
         {
             var endpoint = new MonitoredEndpoint
             {
@@ -52,9 +48,7 @@ public static class MonitoringEndpoints
                 IntervalSeconds = request.IntervalSeconds,
                 TimeoutMs = request.TimeoutMs
             };
-
             var result = await mediator.Send(new EditEndpointCommand(id, endpoint));
-
             return Results.Ok(new EndpointResponse
             {
                 Id = result.Id,
@@ -70,30 +64,32 @@ public static class MonitoringEndpoints
         })
         .WithName("EditEndpoint")
         .WithTags("Monitoring")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
 
-        group.MapDelete("/endpoints/{id:guid}", async (Guid id, IMediator mediator) =>
+        group.MapDelete("/remove-endpoint/{id:guid}", async (Guid id, IMediator mediator) =>
         {
             await mediator.Send(new RemoveEndpointCommand(id));
             return Results.NoContent();
         })
         .WithName("RemoveEndpoint")
         .WithTags("Monitoring")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
 
-        group.MapPatch("/endpoints/{id:guid}/toggle", async (Guid id, IMediator mediator) =>
+        group.MapPatch("/toggle-monitor/{id:guid}", async (Guid id, IMediator mediator) =>
         {
             await mediator.Send(new ToggleMonitorStatusCommand(id));
             return Results.NoContent();
         })
         .WithName("ToggleMonitorStatus")
         .WithTags("Monitoring")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
 
-        group.MapGet("/endpoints/{userId:guid}", async (Guid userId, IMediator mediator) =>
+        group.MapGet("/get-endpoints/{userId:guid}", async (Guid userId, IMediator mediator) =>
         {
             var results = await mediator.Send(new GetEndpointsQuery(userId));
-
             return Results.Ok(results.Select(e => new EndpointResponse
             {
                 Id = e.Id,
@@ -109,6 +105,7 @@ public static class MonitoringEndpoints
         })
         .WithName("GetEndpoints")
         .WithTags("Monitoring")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
     }
 }
