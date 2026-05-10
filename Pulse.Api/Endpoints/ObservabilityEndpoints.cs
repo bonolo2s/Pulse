@@ -4,16 +4,14 @@ using Pulse.Observability.DTOs;
 using Pulse.Observability.Entities;
 using Pulse.Observability.Queries;
 using Pulse.Shared.DTOs;
-
 namespace Pulse.Api.Endpoints;
-
 public static class ObservabilityEndpoints
 {
     public static void MapObservabilityEndpoints(this WebApplication app)
     {
         var group = app.MapGroup("/api/observability");
 
-        group.MapPost("/results", async (AlertNotificationDto dto, IMediator mediator) =>
+        group.MapPost("/record-result", async (AlertNotificationDto dto, IMediator mediator) =>
         {
             var result = new CheckResult
             {
@@ -29,14 +27,13 @@ public static class ObservabilityEndpoints
             await mediator.Send(new RecordCheckResultCommand(result));
             return Results.NoContent();
         })
-        .WithName("RecordCheckResult")
+        .WithName("RecordCheckResult") // fired by SNS — no auth
         .WithTags("Observability")
         .WithOpenApi();
 
-        group.MapGet("/results/{endpointId:guid}/uptime", async (Guid endpointId, int days, IMediator mediator) =>
+        group.MapGet("/get-uptime/{endpointId:guid}", async (Guid endpointId, int days, IMediator mediator) =>
         {
             var results = await mediator.Send(new GetUptimeHistoryQuery(endpointId, days));
-
             return Results.Ok(results.Select(e => new CheckResultResponse
             {
                 Id = e.Id,
@@ -53,12 +50,12 @@ public static class ObservabilityEndpoints
         })
         .WithName("GetUptimeHistory")
         .WithTags("Observability")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
 
-        group.MapGet("/results/{endpointId:guid}/latency", async (Guid endpointId, int days, IMediator mediator) =>
+        group.MapGet("/get-latency/{endpointId:guid}", async (Guid endpointId, int days, IMediator mediator) =>
         {
             var results = await mediator.Send(new GetLatencyTrendsQuery(endpointId, days));
-
             return Results.Ok(results.Select(e => new CheckResultResponse
             {
                 Id = e.Id,
@@ -75,14 +72,13 @@ public static class ObservabilityEndpoints
         })
         .WithName("GetLatencyTrends")
         .WithTags("Observability")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
 
-        group.MapGet("/results/{endpointId:guid}/ssl", async (Guid endpointId, IMediator mediator) =>
+        group.MapGet("/get-ssl/{endpointId:guid}", async (Guid endpointId, IMediator mediator) =>
         {
             var result = await mediator.Send(new GetSslExpiryStatusQuery(endpointId));
-
             if (result is null) return Results.NotFound();
-
             return Results.Ok(new CheckResultResponse
             {
                 Id = result.Id,
@@ -99,6 +95,7 @@ public static class ObservabilityEndpoints
         })
         .WithName("GetSslExpiryStatus")
         .WithTags("Observability")
-        .WithOpenApi();
+        .WithOpenApi()
+        .RequireAuthorization();
     }
 }
