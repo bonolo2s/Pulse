@@ -1,4 +1,5 @@
 using Pulse.Api.Endpoints;
+using Pulse.Api.Middleware;
 using Pulse.Billing;
 using Pulse.Identity;
 using Pulse.Infrastructure;
@@ -21,8 +22,12 @@ builder.Services.AddStatusPages(builder.Configuration.GetConnectionString("Defau
 builder.Services.AddBilling(builder.Configuration.GetConnectionString("DefaultConnection")!);
 
 var app = builder.Build();
-app.MapOpenApi();
-app.MapScalarApiReference();
+
+if (app.Environment.IsDevelopment())
+{
+    app.MapOpenApi();
+    app.MapScalarApiReference();
+}
 app.UseHttpsRedirection();
 app.UseMiddleware<ExceptionMiddleware>();
 app.UseAuthentication();
