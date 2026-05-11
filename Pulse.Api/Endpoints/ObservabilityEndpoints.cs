@@ -4,7 +4,10 @@ using Pulse.Observability.DTOs;
 using Pulse.Observability.Entities;
 using Pulse.Observability.Queries;
 using Pulse.Shared.DTOs;
+using Pulse.Shared.Results;
+
 namespace Pulse.Api.Endpoints;
+
 public static class ObservabilityEndpoints
 {
     public static void MapObservabilityEndpoints(this WebApplication app)
@@ -34,7 +37,7 @@ public static class ObservabilityEndpoints
         group.MapGet("/get-uptime/{endpointId:guid}", async (Guid endpointId, int days, IMediator mediator) =>
         {
             var results = await mediator.Send(new GetUptimeHistoryQuery(endpointId, days));
-            return Results.Ok(results.Select(e => new CheckResultResponse
+            return Results.Ok(ApiResponse<IEnumerable<CheckResultResponse>>.Success(results.Select(e => new CheckResultResponse
             {
                 Id = e.Id,
                 EndpointId = e.EndpointId,
@@ -46,8 +49,12 @@ public static class ObservabilityEndpoints
                 SslDaysRemaining = e.SslDaysRemaining,
                 ErrorMessage = e.ErrorMessage,
                 CheckedAt = e.CheckedAt
-            }));
+            }), "Uptime history retrieved successfully."));
         })
+        .Produces<ApiResponse<IEnumerable<CheckResultResponse>>>(200)
+        .Produces<ApiResponse<object>>(401)
+        .Produces<ApiResponse<object>>(404)
+        .Produces<ApiResponse<object>>(500)
         .WithName("GetUptimeHistory")
         .WithTags("Observability")
         .WithOpenApi()
@@ -56,7 +63,7 @@ public static class ObservabilityEndpoints
         group.MapGet("/get-latency/{endpointId:guid}", async (Guid endpointId, int days, IMediator mediator) =>
         {
             var results = await mediator.Send(new GetLatencyTrendsQuery(endpointId, days));
-            return Results.Ok(results.Select(e => new CheckResultResponse
+            return Results.Ok(ApiResponse<IEnumerable<CheckResultResponse>>.Success(results.Select(e => new CheckResultResponse
             {
                 Id = e.Id,
                 EndpointId = e.EndpointId,
@@ -68,8 +75,12 @@ public static class ObservabilityEndpoints
                 SslDaysRemaining = e.SslDaysRemaining,
                 ErrorMessage = e.ErrorMessage,
                 CheckedAt = e.CheckedAt
-            }));
+            }), "Latency trends retrieved successfully."));
         })
+        .Produces<ApiResponse<IEnumerable<CheckResultResponse>>>(200)
+        .Produces<ApiResponse<object>>(401)
+        .Produces<ApiResponse<object>>(404)
+        .Produces<ApiResponse<object>>(500)
         .WithName("GetLatencyTrends")
         .WithTags("Observability")
         .WithOpenApi()
@@ -78,8 +89,8 @@ public static class ObservabilityEndpoints
         group.MapGet("/get-ssl/{endpointId:guid}", async (Guid endpointId, IMediator mediator) =>
         {
             var result = await mediator.Send(new GetSslExpiryStatusQuery(endpointId));
-            if (result is null) return Results.NotFound();
-            return Results.Ok(new CheckResultResponse
+            if (result is null) return Results.NotFound(ApiResponse<object>.Failure("SSL data not found for this endpoint."));
+            return Results.Ok(ApiResponse<CheckResultResponse>.Success(new CheckResultResponse
             {
                 Id = result.Id,
                 EndpointId = result.EndpointId,
@@ -91,8 +102,12 @@ public static class ObservabilityEndpoints
                 SslDaysRemaining = result.SslDaysRemaining,
                 ErrorMessage = result.ErrorMessage,
                 CheckedAt = result.CheckedAt
-            });
+            }, "SSL expiry status retrieved successfully."));
         })
+        .Produces<ApiResponse<CheckResultResponse>>(200)
+        .Produces<ApiResponse<object>>(401)
+        .Produces<ApiResponse<object>>(404)
+        .Produces<ApiResponse<object>>(500)
         .WithName("GetSslExpiryStatus")
         .WithTags("Observability")
         .WithOpenApi()
