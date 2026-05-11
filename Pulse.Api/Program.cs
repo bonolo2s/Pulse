@@ -24,6 +24,7 @@ var app = builder.Build();
 app.MapOpenApi();
 app.MapScalarApiReference();
 app.UseHttpsRedirection();
+app.UseMiddleware<ExceptionMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapIdentityEndpoints();
