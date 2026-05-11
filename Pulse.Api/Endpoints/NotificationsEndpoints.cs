@@ -4,7 +4,10 @@ using Pulse.Notifications.DTOs;
 using Pulse.Notifications.Entities;
 using Pulse.Notifications.Queries;
 using Pulse.Shared.DTOs;
+using Pulse.Shared.Results;
+
 namespace Pulse.Api.Endpoints;
+
 public static class NotificationsEndpoints
 {
     public static void MapNotificationsEndpoints(this WebApplication app)
@@ -40,8 +43,12 @@ public static class NotificationsEndpoints
                 IsActive = request.IsActive
             };
             await mediator.Send(new ManageAlertRulesCommand(rule));
-            return Results.NoContent();
+            return Results.Ok(ApiResponse<object>.Success(null, "Alert rule saved successfully."));
         })
+        .Produces<ApiResponse<object>>(200)
+        .Produces<ApiResponse<object>>(400)
+        .Produces<ApiResponse<object>>(401)
+        .Produces<ApiResponse<object>>(500)
         .WithName("ManageAlertRules")
         .WithTags("Notifications")
         .WithOpenApi()
@@ -50,7 +57,7 @@ public static class NotificationsEndpoints
         group.MapGet("/get-rules/{userId:guid}", async (Guid userId, IMediator mediator) =>
         {
             var results = await mediator.Send(new GetAlertSettingsQuery(userId));
-            return Results.Ok(results.Select(r => new AlertRuleResponse
+            return Results.Ok(ApiResponse<IEnumerable<AlertRuleResponse>>.Success(results.Select(r => new AlertRuleResponse
             {
                 Id = r.Id,
                 UserId = r.UserId,
@@ -58,8 +65,12 @@ public static class NotificationsEndpoints
                 Destination = r.Destination,
                 IsActive = r.IsActive,
                 CreatedAt = r.CreatedAt
-            }));
+            }), "Alert rules retrieved successfully."));
         })
+        .Produces<ApiResponse<IEnumerable<AlertRuleResponse>>>(200)
+        .Produces<ApiResponse<object>>(401)
+        .Produces<ApiResponse<object>>(404)
+        .Produces<ApiResponse<object>>(500)
         .WithName("GetAlertSettings")
         .WithTags("Notifications")
         .WithOpenApi()
@@ -68,7 +79,7 @@ public static class NotificationsEndpoints
         group.MapGet("/get-logs/{endpointId:guid}", async (Guid endpointId, IMediator mediator) =>
         {
             var results = await mediator.Send(new GetAlertLogsQuery(endpointId));
-            return Results.Ok(results.Select(l => new AlertLogResponse
+            return Results.Ok(ApiResponse<IEnumerable<AlertLogResponse>>.Success(results.Select(l => new AlertLogResponse
             {
                 Id = l.Id,
                 AlertRuleId = l.AlertRuleId,
@@ -80,8 +91,12 @@ public static class NotificationsEndpoints
                 IsAcknowledged = l.IsAcknowledged,
                 AcknowledgedAt = l.AcknowledgedAt,
                 SentAt = l.SentAt
-            }));
+            }), "Alert logs retrieved successfully."));
         })
+        .Produces<ApiResponse<IEnumerable<AlertLogResponse>>>(200)
+        .Produces<ApiResponse<object>>(401)
+        .Produces<ApiResponse<object>>(404)
+        .Produces<ApiResponse<object>>(500)
         .WithName("GetAlertLogs")
         .WithTags("Notifications")
         .WithOpenApi()
@@ -90,8 +105,12 @@ public static class NotificationsEndpoints
         group.MapPatch("/acknowledge-alert/{alertLogId:guid}", async (Guid alertLogId, IMediator mediator) =>
         {
             await mediator.Send(new AcknowledgeAlertCommand(alertLogId));
-            return Results.NoContent();
+            return Results.Ok(ApiResponse<object>.Success(null, "Alert acknowledged successfully."));
         })
+        .Produces<ApiResponse<object>>(200)
+        .Produces<ApiResponse<object>>(401)
+        .Produces<ApiResponse<object>>(404)
+        .Produces<ApiResponse<object>>(500)
         .WithName("AcknowledgeAlert")
         .WithTags("Notifications")
         .WithOpenApi()
