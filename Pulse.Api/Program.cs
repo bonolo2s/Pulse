@@ -32,23 +32,23 @@ if (app.Environment.IsDevelopment())
 }
 app.UseHttpsRedirection();
 app.UseMiddleware<ExceptionMiddleware>();
-app.UseStatusCodePages(async context =>
-{
-    var code = context.HttpContext.Response.StatusCode;
-    if (code is 401 or 403 or 404)
-    {
-        context.HttpContext.Response.ContentType = "application/json";
-        var message = code switch
-        {
-            401 => "You are not authenticated. Please log in.",
-            403 => "You do not have permission to access this resource.",
-            404 => "The requested resource was not found.",
-            _ => "An unexpected error occurred."
-        };
-        var response = ApiResponse<object>.Failure(message);
-        await context.HttpContext.Response.WriteAsync(JsonSerializer.Serialize(response));
-    }
-});
+//app.UseStatusCodePages(async context =>
+//{
+//    var code = context.HttpContext.Response.StatusCode;
+//    if (code is 401 or 403 or 404)
+//    {
+//        context.HttpContext.Response.ContentType = "application/json";
+//        var message = code switch
+//        {
+//            401 => "You are not authenticated. Please log in.",
+//            403 => "You do not have permission to access this resource.",
+//            404 => "The requested resource was not found.",
+//            _ => "An unexpected error occurred."
+//        };
+//        var response = ApiResponse<object>.Failure(message);
+//        await context.HttpContext.Response.WriteAsync(JsonSerializer.Serialize(response));
+//    }
+//});
 app.UseAuthentication();
 app.UseAuthorization();
 app.MapIdentityEndpoints();

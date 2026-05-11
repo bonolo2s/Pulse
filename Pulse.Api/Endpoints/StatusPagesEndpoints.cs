@@ -2,6 +2,7 @@
 using Pulse.StatusPages.Commands;
 using Pulse.StatusPages.DTOs;
 using Pulse.StatusPages.Queries;
+using Pulse.Shared.Results;
 
 namespace Pulse.Api.Endpoints;
 
@@ -22,7 +23,7 @@ public static class StatusPagesEndpoints
 
             var result = await mediator.Send(new CreateStatusPageCommand(statusPage));
 
-            return Results.Created($"/api/statuspages/{result.Id}", new StatusPageResponse
+            return Results.Created($"/api/statuspages/{result.Id}", ApiResponse<StatusPageResponse>.Success(new StatusPageResponse
             {
                 Id = result.Id,
                 UserId = result.UserId,
@@ -30,8 +31,12 @@ public static class StatusPagesEndpoints
                 Slug = result.Slug,
                 IsPublic = result.IsPublic,
                 CreatedAt = result.CreatedAt
-            });
+            }, "Status page created successfully."));
         })
+        .Produces<ApiResponse<StatusPageResponse>>(201)
+        .Produces<ApiResponse<object>>(400)
+        .Produces<ApiResponse<object>>(401)
+        .Produces<ApiResponse<object>>(500)
         .WithName("CreateStatusPage")
         .WithTags("StatusPages")
         .WithOpenApi()
@@ -47,7 +52,7 @@ public static class StatusPagesEndpoints
 
             var result = await mediator.Send(new UpdateStatusPageCommand(id, statusPage));
 
-            return Results.Ok(new StatusPageResponse
+            return Results.Ok(ApiResponse<StatusPageResponse>.Success(new StatusPageResponse
             {
                 Id = result.Id,
                 UserId = result.UserId,
@@ -55,8 +60,13 @@ public static class StatusPagesEndpoints
                 Slug = result.Slug,
                 IsPublic = result.IsPublic,
                 CreatedAt = result.CreatedAt
-            });
+            }, "Status page updated successfully."));
         })
+        .Produces<ApiResponse<StatusPageResponse>>(200)
+        .Produces<ApiResponse<object>>(400)
+        .Produces<ApiResponse<object>>(401)
+        .Produces<ApiResponse<object>>(404)
+        .Produces<ApiResponse<object>>(500)
         .WithName("UpdateStatusPage")
         .WithTags("StatusPages")
         .WithOpenApi()
@@ -65,8 +75,12 @@ public static class StatusPagesEndpoints
         group.MapDelete("/delete-status-page/{id:guid}", async (Guid id, IMediator mediator) =>
         {
             await mediator.Send(new DeleteStatusPageCommand(id));
-            return Results.NoContent();
+            return Results.Ok(ApiResponse<object>.Success(null, "Status page deleted successfully."));
         })
+        .Produces<ApiResponse<object>>(200)
+        .Produces<ApiResponse<object>>(401)
+        .Produces<ApiResponse<object>>(404)
+        .Produces<ApiResponse<object>>(500)
         .WithName("DeleteStatusPage")
         .WithTags("StatusPages")
         .WithOpenApi()
@@ -84,15 +98,20 @@ public static class StatusPagesEndpoints
 
             var result = await mediator.Send(new AddEndpointToStatusPageCommand(statusPageEndpoint));
 
-            return Results.Created($"/api/statuspages/endpoints/{result.Id}", new StatusPageEndpointResponse
+            return Results.Created($"/api/statuspages/endpoints/{result.Id}", ApiResponse<StatusPageEndpointResponse>.Success(new StatusPageEndpointResponse
             {
                 Id = result.Id,
                 StatusPageId = result.StatusPageId,
                 EndpointId = result.EndpointId,
                 DisplayName = result.DisplayName,
                 DisplayOrder = result.DisplayOrder
-            });
+            }, "Endpoint added to status page successfully."));
         })
+        .Produces<ApiResponse<StatusPageEndpointResponse>>(201)
+        .Produces<ApiResponse<object>>(400)
+        .Produces<ApiResponse<object>>(401)
+        .Produces<ApiResponse<object>>(404)
+        .Produces<ApiResponse<object>>(500)
         .WithName("AddEndpointToStatusPage")
         .WithTags("StatusPages")
         .WithOpenApi()
@@ -101,8 +120,12 @@ public static class StatusPagesEndpoints
         group.MapDelete("/remove-endpoint/{statusPageEndpointId:guid}", async (Guid statusPageEndpointId, IMediator mediator) =>
         {
             await mediator.Send(new RemoveEndpointFromStatusPageCommand(statusPageEndpointId));
-            return Results.NoContent();
+            return Results.Ok(ApiResponse<object>.Success(null, "Endpoint removed from status page successfully."));
         })
+        .Produces<ApiResponse<object>>(200)
+        .Produces<ApiResponse<object>>(401)
+        .Produces<ApiResponse<object>>(404)
+        .Produces<ApiResponse<object>>(500)
         .WithName("RemoveEndpointFromStatusPage")
         .WithTags("StatusPages")
         .WithOpenApi()
@@ -112,7 +135,7 @@ public static class StatusPagesEndpoints
         {
             var result = await mediator.Send(new GetPublicStatusPageQuery(slug));
 
-            return Results.Ok(new StatusPageResponse
+            return Results.Ok(ApiResponse<StatusPageResponse>.Success(new StatusPageResponse
             {
                 Id = result.Id,
                 UserId = result.UserId,
@@ -128,8 +151,11 @@ public static class StatusPagesEndpoints
                     DisplayName = e.DisplayName,
                     DisplayOrder = e.DisplayOrder
                 })
-            });
+            }, "Public status page retrieved successfully."));
         })
+        .Produces<ApiResponse<StatusPageResponse>>(200)
+        .Produces<ApiResponse<object>>(404)
+        .Produces<ApiResponse<object>>(500)
         .WithName("GetPublicStatusPage")
         .WithTags("StatusPages")
         .WithOpenApi();
@@ -138,7 +164,7 @@ public static class StatusPagesEndpoints
         {
             var result = await mediator.Send(new GetPrivateStatusPageQuery(statusPageId));
 
-            return Results.Ok(new StatusPageResponse
+            return Results.Ok(ApiResponse<StatusPageResponse>.Success(new StatusPageResponse
             {
                 Id = result.Id,
                 UserId = result.UserId,
@@ -154,8 +180,12 @@ public static class StatusPagesEndpoints
                     DisplayName = e.DisplayName,
                     DisplayOrder = e.DisplayOrder
                 })
-            });
+            }, "Private status page retrieved successfully."));
         })
+        .Produces<ApiResponse<StatusPageResponse>>(200)
+        .Produces<ApiResponse<object>>(401)
+        .Produces<ApiResponse<object>>(404)
+        .Produces<ApiResponse<object>>(500)
         .WithName("GetPrivateStatusPage")
         .WithTags("StatusPages")
         .WithOpenApi()
