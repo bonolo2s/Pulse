@@ -23,7 +23,12 @@ public static class DependencyInjection
         services.AddSingleton<LatencyTracker>();
         services.AddSingleton<SslInspector>();
         services.AddScoped<IHealthCheckService, HealthCheckService>();
-
+        services.AddScoped<IEndpointRepository>(provider =>
+        {
+            var connectionString = Environment.GetEnvironmentVariable("DB__CONNECTIONSTRING")
+                ?? throw new InvalidOperationException("DB__CONNECTIONSTRING not set.");
+            return new EndpointRepository(connectionString);
+        });
         return services;
     }
 }
