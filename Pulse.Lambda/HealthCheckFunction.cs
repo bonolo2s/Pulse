@@ -1,10 +1,8 @@
 ﻿using Amazon.Lambda.Core;
-using Amazon.SimpleNotificationService;
+using Amazon.Lambda.CloudWatchEvents.ScheduledEvents;
 using Pulse.Lambda.Interfaces;
-using Pulse.Lambda.Models;
 using Pulse.Shared.Interfaces;
 using Pulse.Shared.DTOs;
-using System.Text.Json;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
@@ -14,22 +12,35 @@ public class HealthCheckFunction
 {
     private readonly IHealthCheckService _healthCheckService;
     private readonly ISnsPublisher _snsPublisher;
+    private readonly IEndpointRepository _endpointRepository;
 
-    public HealthCheckFunction(IHealthCheckService healthCheckService, ISnsPublisher snsPublisher)
+    public HealthCheckFunction(
+        IHealthCheckService healthCheckService,
+        ISnsPublisher snsPublisher,
+        IEndpointRepository endpointRepository)
     {
         _healthCheckService = healthCheckService;
         _snsPublisher = snsPublisher;
+        _endpointRepository = endpointRepository;
     }
 
-    public async Task FunctionHandler(HealthCheckPayload payload, ILambdaContext context)
+    public async Task FunctionHandler(ScheduledEvent scheduledEvent, ILambdaContext context)
     {
-        var result = await _healthCheckService.RunHealthCheckAsync(payload.EndpointId, payload.Url);
+        var intervalSeconds = int.Parse(
+            Environment.GetEnvironmentVariable("CHECK_INTERVAL_SECONDS")
+                ?? throw new InvalidOperationException("CHECK_INTERVAL_SECONDS not set."));
 
-        await _snsPublisher.PublishAlertAsync(new AlertNotificationDto
+        var endpoints = await _endpointRepository.GetEndpointsByIntervalAsync(intervalSeconds);
+
+        foreach (var endpoint in endpoints)
         {
-            EndpointId = result.EndpointId,
-            Result = result,
-            SentAt = DateTime.UtcNow
-        });
+            var result = await _healthCheckService.RunHealthCheckAsync(endpoint.Id, endpoint.Url);
+            await _snsPublisher.PublishAlertAsync(new AlertNotificationDto
+            {
+                EndpointId = result.EndpointId,
+                Result = result,
+                SentAt = DateTime.UtcNow
+            });
+        }
     }
 }
