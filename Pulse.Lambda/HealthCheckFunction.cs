@@ -3,6 +3,7 @@ using Amazon.Lambda.CloudWatchEvents.ScheduledEvents;
 using Pulse.Lambda.Interfaces;
 using Pulse.Shared.Interfaces;
 using Pulse.Shared.DTOs;
+using Pulse.Lambda.Models;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
@@ -24,13 +25,9 @@ public class HealthCheckFunction
         _endpointRepository = endpointRepository;
     }
 
-    public async Task FunctionHandler(ScheduledEvent scheduledEvent, ILambdaContext context)
+    public async Task FunctionHandler(HealthCheckEvent healthCheckEvent, ILambdaContext context) //rules meteData
     {
-        var intervalSeconds = int.Parse(
-            Environment.GetEnvironmentVariable("CHECK_INTERVAL_SECONDS")
-                ?? throw new InvalidOperationException("CHECK_INTERVAL_SECONDS not set."));
-
-        var endpoints = await _endpointRepository.GetEndpointsByIntervalAsync(intervalSeconds);
+        var endpoints = await _endpointRepository.GetEndpointsByIntervalAsync(healthCheckEvent.IntervalSeconds);
 
         foreach (var endpoint in endpoints)
         {
