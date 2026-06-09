@@ -1,0 +1,26 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Pulse Lambda - local SAM testing
+
+Globals:
+  Function:
+    Timeout: 30
+    MemorySize: 256
+    Runtime: dotnet8
+    Architectures:
+      - x86_64
+
+Resources:
+  HealthCheckFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: pulse-health-check-dev
+      CodeUri: ./publish/lambda/
+      Handler: Pulse.Lambda::Pulse.Lambda.HealthCheckFunction::FunctionHandler
+      Environment:
+        Variables:
+          ASPNETCORE_ENVIRONMENT: Development
+          ConnectionStrings__Postgres: Host=host.docker.internal;Port=5432;Database=pulse_dev;Username=postgres;Password=postgres
+          Redis__ConnectionString: host.docker.internal:6379
+          AWS__Region: eu-west-1  
+          AWS__SnsTopicArn: arn:aws:sns:eu-west-1:8810054270:pulse-alerts-dev
