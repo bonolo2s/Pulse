@@ -6,9 +6,13 @@ Globals:
   Function:
     Timeout: 30
     MemorySize: 256
-    Runtime: dotnet8
+    Runtime: dotnet9
     Architectures:
       - x86_64
+
+Parameters:
+  SnsTopicArn:
+    Type: String
 
 Resources:
   HealthCheckFunction:
@@ -22,5 +26,5 @@ Resources:
           ASPNETCORE_ENVIRONMENT: Development
           ConnectionStrings__Postgres: Host=host.docker.internal;Port=5432;Database=pulse_dev;Username=postgres;Password=postgres
           Redis__ConnectionString: host.docker.internal:6379
-          AWS__Region: eu-west-1  
-          AWS__SnsTopicArn: arn:aws:sns:eu-west-1:8810054270:pulse-alerts-dev
+          AWS__Region: eu-west-1
+          AWS__SnsTopicArn: !Ref SnsTopicArn
