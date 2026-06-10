@@ -22,7 +22,7 @@ services:
   #     - pulse-redis-data:/data
 
   localstack:
-    image: localstack/localstack
+    image: localstack/localstack:3.0.0
     container_name: pulse-localstack
     ports:
       - "4566:4566"
