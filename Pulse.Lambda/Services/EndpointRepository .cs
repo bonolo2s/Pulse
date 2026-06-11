@@ -19,10 +19,10 @@ public class EndpointRepository : IEndpointRepository
         using var connection = new NpgsqlConnection(_connectionString);
 
         const string sql = """
-            SELECT id, url, interval_seconds
+            SELECT "Id", "Url", "IntervalSeconds"
             FROM "MonitoredEndpoints"
-            WHERE interval_seconds = @IntervalSeconds
-            AND is_active = true
+            WHERE "IntervalSeconds" = @IntervalSeconds
+            AND "IsActive" = true
             """;
 
         return await connection.QueryAsync<EndpointForCheckDto>(sql, new { IntervalSeconds = intervalSeconds });
