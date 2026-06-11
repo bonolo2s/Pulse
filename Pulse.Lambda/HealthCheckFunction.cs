@@ -1,9 +1,10 @@
-﻿using Amazon.Lambda.Core;
-using Amazon.Lambda.CloudWatchEvents.ScheduledEvents;
+﻿using Amazon.Lambda.CloudWatchEvents.ScheduledEvents;
+using Amazon.Lambda.Core;
+using Microsoft.Extensions.DependencyInjection;
 using Pulse.Lambda.Interfaces;
-using Pulse.Shared.Interfaces;
-using Pulse.Shared.DTOs;
 using Pulse.Lambda.Models;
+using Pulse.Shared.DTOs;
+using Pulse.Shared.Interfaces;
 
 [assembly: LambdaSerializer(typeof(Amazon.Lambda.Serialization.SystemTextJson.DefaultLambdaJsonSerializer))]
 
@@ -15,14 +16,17 @@ public class HealthCheckFunction
     private readonly ISnsPublisher _snsPublisher;
     private readonly IEndpointRepository _endpointRepository;
 
-    public HealthCheckFunction(
-        IHealthCheckService healthCheckService,
-        ISnsPublisher snsPublisher,
-        IEndpointRepository endpointRepository)
+    public HealthCheckFunction()
     {
-        _healthCheckService = healthCheckService;
-        _snsPublisher = snsPublisher;
-        _endpointRepository = endpointRepository;
+        var services = new ServiceCollection();
+
+        services.AddLambdaServices();
+
+        var serviceProvider = services.BuildServiceProvider();
+
+        _healthCheckService = serviceProvider.GetRequiredService<IHealthCheckService>();
+        _snsPublisher = serviceProvider.GetRequiredService<ISnsPublisher>();
+        _endpointRepository = serviceProvider.GetRequiredService<IEndpointRepository>();
     }
 
     public async Task FunctionHandler(HealthCheckEvent healthCheckEvent, ILambdaContext context) //rules meteData

@@ -2,7 +2,7 @@ $ENDPOINT = "http://localhost:4566"
 $REGION = "eu-west-1"
 $PROFILE = "localstack" 
 
-Write-Host "Setting up LocalStack resources..."
+Write-Host "Setting up FLOCI resources..."
 
 # SNS
 Write-Host "Creating SNS topic..."
