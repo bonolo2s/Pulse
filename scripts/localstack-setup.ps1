@@ -43,4 +43,24 @@ foreach ($interval in $intervals) {
     Write-Host "Created rule: pulse-health-check-$($interval.Name) ($($interval.Seconds)s)"
 }
 
+# Wire EventBridge rules to Lambda
+Write-Host "Wiring EventBridge rules to Lambda..."
+$lambdaArn = "arn:aws:lambda:eu-west-1:000000000000:function:pulse-health-check-dev"
+
+foreach ($interval in $intervals) {
+    $inputFile = ".\target-input-$($interval.Seconds).json"
+    '{"intervalSeconds":' + $interval.Seconds + '}' | Out-File -FilePath $inputFile -Encoding utf8 -NoNewline
+
+    aws events put-targets `
+      --rule "pulse-health-check-$($interval.Name)" `
+      --targets "Id=lambda-target,Arn=$lambdaArn,Input=file://$inputFile" `
+      --profile $PROFILE `
+      --endpoint-url $ENDPOINT `
+      --region $REGION
+
+    Remove-Item $inputFile
+    Write-Host "Wired rule: pulse-health-check-$($interval.Name) -> Lambda ($($interval.Seconds)s)"
+}
+
 Write-Host "Done. LocalStack resources provisioned."
+

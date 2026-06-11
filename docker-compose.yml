@@ -21,21 +21,19 @@ services:
   #   volumes:
   #     - pulse-redis-data:/data
 
-  localstack:
-    image: localstack/localstack:3.0.0
-    container_name: pulse-localstack
+  floci:
+    image: floci/floci:latest
+    container_name: pulse-floci
     ports:
       - "4566:4566"
     environment:
-      - SERVICES=sns,ses,events,lambda
-      - DEFAULT_REGION=eu-west-1
-      - LAMBDA_EXECUTOR=docker
-      - DOCKER_HOST=unix:///var/run/docker.sock
+      - AWS_DEFAULT_REGION=eu-west-1
+      - FLOCI_ENFORCE_IAM=true
     volumes:
       - "/var/run/docker.sock:/var/run/docker.sock"
-      - pulse-localstack-data:/var/lib/localstack
+      - pulse-floci-data:/var/lib/floci
 
 volumes:
   pulse-postgres-data:
   pulse-redis-data:
-  pulse-localstack-data:
+  pulse-floci-data:
