@@ -20,7 +20,7 @@ public class EndpointRepository : IEndpointRepository
 
         const string sql = """
             SELECT id, url, interval_seconds
-            FROM monitored_endpoints
+            FROM "MonitoredEndpoints"
             WHERE interval_seconds = @IntervalSeconds
             AND is_active = true
             """;
