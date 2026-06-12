@@ -19,7 +19,7 @@ public static class DependencyInjection
                 ServiceURL = "http://172.20.0.3:4566",
                 AuthenticationRegion = "eu-west-1"
             };
-            return new AmazonSimpleNotificationServiceClient("test", "test", config);
+            return new AmazonSimpleNotificationServiceClient("test", "test", config);//
         });
         services.AddSingleton<ISnsPublisher>(provider =>
         {
