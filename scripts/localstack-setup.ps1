@@ -20,15 +20,17 @@ aws ses verify-email-identity `
   --endpoint-url $ENDPOINT `
   --region $REGION
 
+#EventBridge and Lambda.
 # EventBridge rules
 Write-Host "Creating EventBridge rules..."
 $intervals = @(
-    @{ Name = "1min";  Rate = "rate(1 minute)";  Seconds = 60 },
-    @{ Name = "5min";  Rate = "rate(5 minutes)"; Seconds = 300 },
-    @{ Name = "10min"; Rate = "rate(10 minutes)"; Seconds = 600 },
-    @{ Name = "15min"; Rate = "rate(15 minutes)"; Seconds = 900 },
-    @{ Name = "30min"; Rate = "rate(30 minutes)"; Seconds = 1800 },
-    @{ Name = "1hour"; Rate = "rate(1 hour)";     Seconds = 3600 }
+    # @{ Name = "1min";  Rate = "rate(1 minute)";  Seconds = 60 },
+    @{ Name = "3min";  Rate = "rate(3 minutes)"; Seconds = 180 }
+    #@{ Name = "5min";  Rate = "rate(5 minutes)"; Seconds = 300 }
+    # @{ Name = "10min"; Rate = "rate(10 minutes)"; Seconds = 600 },
+    # @{ Name = "15min"; Rate = "rate(15 minutes)"; Seconds = 900 },
+    # @{ Name = "30min"; Rate = "rate(30 minutes)"; Seconds = 1800 },
+    # @{ Name = "1hour"; Rate = "rate(1 hour)";     Seconds = 3600 }
 )
 
 foreach ($interval in $intervals) {
@@ -48,17 +50,21 @@ Write-Host "Wiring EventBridge rules to Lambda..."
 $lambdaArn = "arn:aws:lambda:eu-west-1:000000000000:function:pulse-health-check-dev"
 
 foreach ($interval in $intervals) {
-    $inputFile = ".\target-input-$($interval.Seconds).json"
-    '{"intervalSeconds":' + $interval.Seconds + '}' | Out-File -FilePath $inputFile -Encoding utf8 -NoNewline
+    $inputJson = '{"intervalSeconds":' + $interval.Seconds + '}'
+    $targetsJson = '[{"Id":"lambda-target","Arn":"' + $lambdaArn + '","Input":"{\"intervalSeconds\":' + $interval.Seconds + '}"}]'
+    
+    $tempFile = [System.IO.Path]::GetTempFileName()
+    $utf8NoBOM = New-Object System.Text.UTF8Encoding $false
+    [System.IO.File]::WriteAllText($tempFile, $targetsJson, $utf8NoBOM)
 
     aws events put-targets `
       --rule "pulse-health-check-$($interval.Name)" `
-      --targets "Id=lambda-target,Arn=$lambdaArn,Input=file://$inputFile" `
+      --targets "file://$tempFile" `
       --profile $PROFILE `
       --endpoint-url $ENDPOINT `
       --region $REGION
 
-    Remove-Item $inputFile
+    Remove-Item $tempFile
     Write-Host "Wired rule: pulse-health-check-$($interval.Name) -> Lambda ($($interval.Seconds)s)"
 }
 

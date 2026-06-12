@@ -1,8 +1,9 @@
-﻿using System.Net;
-using System.Runtime.Intrinsics.X86;
-using Pulse.Lambda.Interfaces;
+﻿using Pulse.Lambda.Interfaces;
 using Pulse.Shared.DTOs;
 using Pulse.Shared.Enums;
+using System.Diagnostics;
+using System.Net;
+using System.Runtime.Intrinsics.X86;
 
 namespace Pulse.Lambda.Services;
 
@@ -22,29 +23,26 @@ public class HealthCheckService : IHealthCheckService
         _sslInspector = sslInspector;
     }
 
-    private async Task<(bool IsUp, int StatusCode)> PingAsync(string url)
+    private async Task<(bool IsUp, int StatusCode, long LatencyMs)> PingAsync(string url)
     {
         try
         {
+            var sw = Stopwatch.StartNew();
             var response = await _httpClient.GetAsync(url);
+            sw.Stop();
             var isUp = response.StatusCode is >= HttpStatusCode.OK and < HttpStatusCode.MultipleChoices;
-            return (isUp, (int)response.StatusCode);
+            return (isUp, (int)response.StatusCode, sw.ElapsedMilliseconds);
         }
         catch
         {
-            return (false, 0);
+            return (false, 0, 0);
         }
-    }
-
-    private async Task<long> MeasureLatencyAsync(string url)
-    {
-        return await _latencyTracker.MeasureAsync(url, _httpClient);
     }
 
     public async Task<HealthCheckResult> RunHealthCheckAsync(Guid endpointId, string url)
     {
-        var (isUp, statusCode) = await PingAsync(url);
-        var latencyMs = await MeasureLatencyAsync(url);
+        var (isUp, statusCode, latencyMs) = await PingAsync(url);
+        //var latencyMs = await MeasureLatencyAsync(url);
         var (isExpiringSoon, expiryDate, issuer) = await _sslInspector.InspectAsync(url);
 
         var status = isUp
