@@ -12,11 +12,19 @@ public static class DependencyInjection
     public static IServiceCollection AddLambdaServices(this IServiceCollection services)
     {
         services.AddHttpClient();
-        services.AddSingleton<IAmazonSimpleNotificationService, AmazonSimpleNotificationServiceClient>();
+        services.AddSingleton<IAmazonSimpleNotificationService>(_ =>
+        {
+            var config = new AmazonSimpleNotificationServiceConfig
+            {
+                ServiceURL = "http://172.20.0.3:4566",
+                AuthenticationRegion = "eu-west-1"
+            };
+            return new AmazonSimpleNotificationServiceClient("test", "test", config);
+        });
         services.AddSingleton<ISnsPublisher>(provider =>
         {
             var sns = provider.GetRequiredService<IAmazonSimpleNotificationService>();
-            var topicArn = Environment.GetEnvironmentVariable("AWS__SNS__ALERTTOPICARN")//
+            var topicArn = Environment.GetEnvironmentVariable("AWS__SNS__ALERTTOPICARN")
                 ?? throw new InvalidOperationException("SNS_TOPIC_ARN not set.");
             return new SnsAlertPublisher(sns, topicArn);
         });
