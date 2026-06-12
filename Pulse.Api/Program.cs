@@ -13,6 +13,12 @@ using System.Text.Json;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddOpenApi();
+builder.Services.AddDefaultAWSOptions(new Amazon.Extensions.NETCore.Setup.AWSOptions
+{
+    Region = Amazon.RegionEndpoint.EUWest1,
+    Credentials = new Amazon.Runtime.BasicAWSCredentials("test", "test"),
+    DefaultClientConfig = { ServiceURL = "http://localhost:4566" }
+});
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddIdentity(
     builder.Configuration.GetConnectionString("DefaultConnection")!,
