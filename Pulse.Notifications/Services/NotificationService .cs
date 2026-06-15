@@ -24,7 +24,7 @@ public class NotificationService : INotificationService
 
         foreach (var rule in rules)
         {
-            var hasUnacknowledged = await _context.AlertLogs
+            var hasUnacknowledged = await _context.AlertLogs //
                 .AnyAsync(l => l.EndpointId == result.EndpointId
                     && l.AlertRuleId == rule.Id
                     && !l.IsAcknowledged);

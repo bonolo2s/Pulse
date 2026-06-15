@@ -16,7 +16,7 @@ public static class DependencyInjection
         {
             var config = new AmazonSimpleNotificationServiceConfig
             {
-                ServiceURL = "http://172.20.0.3:4566",
+                ServiceURL = "http://host.docker.internal:4566",
                 AuthenticationRegion = "eu-west-1"
             };
             return new AmazonSimpleNotificationServiceClient("test", "test", config);//
