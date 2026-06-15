@@ -17,6 +17,8 @@ public class SesEmailSender : IEmailSender
 
     public async Task SendAsync(string to, string subject, string body)
     {
+        Console.WriteLine($"[SES] Sending email to: {to} | Subject: {subject}");
+
         var request = new SendEmailRequest
         {
             Source = _fromAddress,
@@ -32,5 +34,7 @@ public class SesEmailSender : IEmailSender
         };
 
         await _ses.SendEmailAsync(request);
+
+        Console.WriteLine($"[SES] Email sent successfully to: {to}");
     }
 }

@@ -19,6 +19,8 @@ public class SnsAlertPublisher : ISnsPublisher
 
     public async Task PublishAlertAsync(AlertNotificationDto message)
     {
+        Console.WriteLine($"[SNS] Publishing alert for endpoint: {message.EndpointId} | Status: {message.Result.Status}");
+
         var request = new PublishRequest
         {
             TopicArn = _topicArn,
@@ -35,5 +37,7 @@ public class SnsAlertPublisher : ISnsPublisher
         };
 
         await _sns.PublishAsync(request);
+
+        Console.WriteLine($"[SNS] Alert published successfully for endpoint: {message.EndpointId}");
     }
 }
