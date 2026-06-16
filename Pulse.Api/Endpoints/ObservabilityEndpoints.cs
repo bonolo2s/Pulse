@@ -5,6 +5,7 @@ using Pulse.Observability.Entities;
 using Pulse.Observability.Queries;
 using Pulse.Shared.DTOs;
 using Pulse.Shared.Results;
+using System.Text.Json;
 
 namespace Pulse.Api.Endpoints;
 
@@ -14,11 +15,14 @@ public static class ObservabilityEndpoints
     {
         var group = app.MapGroup("/api/observability");
 
-        group.MapPost("/record-result", async (AlertNotificationDto dto, IMediator mediator) =>
+        group.MapPost("/record-result", async (HttpContext ctx, IMediator mediator) =>
         {
+            var envelope = await JsonSerializer.DeserializeAsync<SnsEnvelope>(ctx.Request.Body);
+            var dto = JsonSerializer.Deserialize<AlertNotificationDto>(envelope!.Message);
+
             var result = new CheckResult
             {
-                EndpointId = dto.Result.EndpointId,
+                EndpointId = dto!.Result.EndpointId,
                 Status = dto.Result.Status,
                 StatusCode = dto.Result.StatusCode,
                 LatencyMs = dto.Result.LatencyMs,
@@ -27,6 +31,7 @@ public static class ObservabilityEndpoints
                 SslDaysRemaining = dto.Result.SslDaysRemaining,
                 ErrorMessage = dto.Result.ErrorMessage
             };
+
             await mediator.Send(new RecordCheckResultCommand(result));
             return Results.NoContent();
         })
