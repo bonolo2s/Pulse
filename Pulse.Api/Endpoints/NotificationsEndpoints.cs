@@ -15,6 +15,39 @@ public static class NotificationsEndpoints
     {
         var group = app.MapGroup("/api/notifications");
 
+        group.MapPost("/sns", async (HttpRequest request, HttpClient httpClient) =>
+        {
+            Console.WriteLine("Got SNS payload");
+
+            using var reader = new StreamReader(request.Body);
+            var body = await reader.ReadToEndAsync();
+            var payload = System.Text.Json.JsonSerializer.Deserialize<JsonElement>(body);
+
+            string type = payload.GetProperty("Type").GetString();
+
+            if (type == "SubscriptionConfirmation")
+            {
+                string subscribeUrl = payload.GetProperty("SubscribeURL").GetString();
+                await httpClient.GetAsync(subscribeUrl);
+                return Results.Ok(ApiResponse<object>.Success(null, "Subscription confirmed."));
+            }
+            else if (type == "Notification")
+            {
+                string message = payload.GetProperty("Message").GetString();
+                Console.WriteLine($"Received SNS message: {message}");
+                return Results.Ok(ApiResponse<object>.Success(null, "Notification received."));
+            }
+
+            return Results.BadRequest(ApiResponse<object>.Failure("Unsupported SNS message type."));
+        })
+        .Produces<ApiResponse<object>>(200)
+        .Produces<ApiResponse<object>>(400)
+        .WithName("SnsHandler")
+        .WithTags("Notifications")
+        .WithOpenApi();
+
+
+
         group.MapPost("/trigger-alert", async (HttpContext ctx, IMediator mediator) =>
         {
             var envelope = await JsonSerializer.DeserializeAsync<SnsEnvelope>(ctx.Request.Body);
