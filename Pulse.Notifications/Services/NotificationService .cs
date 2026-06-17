@@ -4,16 +4,19 @@ using Pulse.Notifications.Entities;
 using Pulse.Notifications.Interfaces;
 using Pulse.Shared.DTOs;
 using Pulse.Shared.Enums;
+using Pulse.Shared.Interfaces;
 
 namespace Pulse.Notifications.Services;
 
 public class NotificationService : INotificationService
 {
     private readonly NotificationsDbContext _context;
+    private readonly IEmailSender _emailSender;
 
-    public NotificationService(NotificationsDbContext context)
+    public NotificationService(NotificationsDbContext context, IEmailSender emailSender)
     {
         _context = context;
+        _emailSender = emailSender;
     }
 
     public async Task TriggerAlertAsync(HealthCheckResult result)
@@ -75,7 +78,12 @@ public class NotificationService : INotificationService
 
     public async Task DispatchEmailNotificationAsync(AlertLog log)
     {
-        // AWS SES integration — wired in Infrastructure
+        var rule = await _context.AlertRules.FindAsync(log.AlertRuleId);// i need destination
+        await _emailSender.SendAsync(
+            to: rule!.Destination,
+            subject: $"Pulse Alert: {log.Type}",
+            body: log.Message
+        );
         log.Delivered = true;
         await _context.SaveChangesAsync();
     }
