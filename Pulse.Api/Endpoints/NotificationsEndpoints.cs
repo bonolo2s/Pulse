@@ -5,6 +5,7 @@ using Pulse.Notifications.Entities;
 using Pulse.Notifications.Queries;
 using Pulse.Shared.DTOs;
 using Pulse.Shared.Results;
+using System.Text.Json;
 
 namespace Pulse.Api.Endpoints;
 
@@ -14,12 +15,14 @@ public static class NotificationsEndpoints
     {
         var group = app.MapGroup("/api/notifications");
 
-        group.MapPost("/trigger-alert", async (AlertNotificationDto dto, IMediator mediator) =>
+        group.MapPost("/trigger-alert", async (HttpContext ctx, IMediator mediator) =>
         {
-            await mediator.Send(new TriggerAlertCommand(dto.Result));
+            var envelope = await JsonSerializer.DeserializeAsync<SnsEnvelope>(ctx.Request.Body);
+            var dto = JsonSerializer.Deserialize<AlertNotificationDto>(envelope!.Message);
+            await mediator.Send(new TriggerAlertCommand(dto!.Result));
             return Results.NoContent();
         })
-        .WithName("TriggerAlert") // fired by lambda when  down
+                .WithName("TriggerAlert") // fired by lambda when  down
         .WithTags("Notifications")
         .WithOpenApi();
 
