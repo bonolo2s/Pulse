@@ -19,9 +19,17 @@ public static class NotificationsEndpoints
         {
             Console.WriteLine("Got SNS payload");
 
-            using var reader = new StreamReader(request.Body);
+            request.Body.Position = 0;
+
+            using var reader = new StreamReader(request.Body, leaveOpen: true);
             var body = await reader.ReadToEndAsync();
-            var payload = System.Text.Json.JsonSerializer.Deserialize<JsonElement>(body);
+
+            Console.WriteLine($"Raw body: {body}");
+
+            if (string.IsNullOrWhiteSpace(body))
+                return Results.BadRequest(ApiResponse<object>.Failure("Empty request body."));
+
+            var payload = JsonSerializer.Deserialize<JsonElement>(body);
 
             string type = payload.GetProperty("Type").GetString();
 
