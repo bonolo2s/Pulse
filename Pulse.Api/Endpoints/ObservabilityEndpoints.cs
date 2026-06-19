@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Pulse.Observability.Commands;
 using Pulse.Observability.DTOs;
 using Pulse.Observability.Entities;
@@ -15,28 +16,25 @@ public static class ObservabilityEndpoints
     {
         var group = app.MapGroup("/api/observability");
 
-        group.MapPost("/record-result", async (HttpContext ctx, IMediator mediator, HttpClient httpClient) =>
+        group.MapPost("/record-result", async (SnsEnvelope envelope, IMediator mediator, [FromServices] HttpClient httpClient) =>
         {
             Console.WriteLine("Got SNS payload");
-            ctx.Request.Body.Position = 0;
 
-            using var reader = new StreamReader(ctx.Request.Body, leaveOpen: true);
-            var body = await reader.ReadToEndAsync();
+            Console.WriteLine($"This is the raw payload , i wanna POC automatic streaming:{envelope}");
 
-            Console.WriteLine($"Raw body: {body}");
-
-            var payload = JsonSerializer.Deserialize<JsonElement>(body);
-
-            if (payload.TryGetProperty("Type", out var typeProp) && typeProp.GetString() == "SubscriptionConfirmation")
+            if (envelope.Type == "SubscriptionConfirmation")
             {
-                string subscribeUrl = payload.GetProperty("SubscribeURL").GetString()!;
-                await httpClient.GetAsync(subscribeUrl);
-                return Results.Ok(ApiResponse<object>.Success(null, "Subscription confirmed."));
+                // For confirmation, we need to parse the raw structure to get the SubscribeURL
+                var payload = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(envelope));
+                if (payload.TryGetProperty("SubscribeURL", out var urlProp))
+                {
+                    string subscribeUrl = urlProp.GetString()!;
+                    await httpClient.GetAsync(subscribeUrl);
+                    return Results.Ok(ApiResponse<object>.Success(null, "Subscription confirmed."));
+                }
             }
 
-            ctx.Request.Body.Position = 0;
-            var envelope = await JsonSerializer.DeserializeAsync<SnsEnvelope>(ctx.Request.Body);
-            var dto = JsonSerializer.Deserialize<AlertNotificationDto>(envelope!.Message);
+            var dto = JsonSerializer.Deserialize<AlertNotificationDto>(envelope.Message);
             var result = new CheckResult
             {
                 EndpointId = dto!.Result.EndpointId,
@@ -48,6 +46,7 @@ public static class ObservabilityEndpoints
                 SslDaysRemaining = dto.Result.SslDaysRemaining,
                 ErrorMessage = dto.Result.ErrorMessage
             };
+
             await mediator.Send(new RecordCheckResultCommand(result));
             return Results.NoContent();
         })
