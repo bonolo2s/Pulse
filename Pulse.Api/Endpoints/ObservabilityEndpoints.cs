@@ -15,11 +15,28 @@ public static class ObservabilityEndpoints
     {
         var group = app.MapGroup("/api/observability");
 
-        group.MapPost("/record-result", async (HttpContext ctx, IMediator mediator) =>
+        group.MapPost("/record-result", async (HttpContext ctx, IMediator mediator, HttpClient httpClient) =>
         {
+            Console.WriteLine("Got SNS payload");
+            ctx.Request.Body.Position = 0;
+
+            using var reader = new StreamReader(ctx.Request.Body, leaveOpen: true);
+            var body = await reader.ReadToEndAsync();
+
+            Console.WriteLine($"Raw body: {body}");
+
+            var payload = JsonSerializer.Deserialize<JsonElement>(body);
+
+            if (payload.TryGetProperty("Type", out var typeProp) && typeProp.GetString() == "SubscriptionConfirmation")
+            {
+                string subscribeUrl = payload.GetProperty("SubscribeURL").GetString()!;
+                await httpClient.GetAsync(subscribeUrl);
+                return Results.Ok(ApiResponse<object>.Success(null, "Subscription confirmed."));
+            }
+
+            ctx.Request.Body.Position = 0;
             var envelope = await JsonSerializer.DeserializeAsync<SnsEnvelope>(ctx.Request.Body);
             var dto = JsonSerializer.Deserialize<AlertNotificationDto>(envelope!.Message);
-
             var result = new CheckResult
             {
                 EndpointId = dto!.Result.EndpointId,
@@ -31,7 +48,6 @@ public static class ObservabilityEndpoints
                 SslDaysRemaining = dto.Result.SslDaysRemaining,
                 ErrorMessage = dto.Result.ErrorMessage
             };
-
             await mediator.Send(new RecordCheckResultCommand(result));
             return Results.NoContent();
         })
