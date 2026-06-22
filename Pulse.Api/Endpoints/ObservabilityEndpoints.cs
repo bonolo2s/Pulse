@@ -24,14 +24,9 @@ public static class ObservabilityEndpoints
 
             if (envelope.Type == "SubscriptionConfirmation")
             {
-                // For confirmation, we need to parse the raw structure to get the SubscribeURL
-                var payload = JsonSerializer.Deserialize<JsonElement>(JsonSerializer.Serialize(envelope));
-                if (payload.TryGetProperty("SubscribeURL", out var urlProp))
-                {
-                    string subscribeUrl = urlProp.GetString()!;
-                    await httpClient.GetAsync(subscribeUrl);
-                    return Results.Ok(ApiResponse<object>.Success(null, "Subscription confirmed."));
-                }
+                Console.WriteLine("Triggering the handshake route.");
+                await httpClient.GetAsync(envelope.SubscribeURL);
+                return Results.Ok(ApiResponse<object>.Success(null, "Subscription confirmed."));
             }
 
             var dto = JsonSerializer.Deserialize<AlertNotificationDto>(envelope.Message);

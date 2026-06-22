@@ -12,6 +12,14 @@ aws sns create-topic `
   --endpoint-url $ENDPOINT `
   --region $REGION
 
+# SQS
+Write-Host "Creating SQS queue..."
+aws sqs create-queue `
+  --queue-name pulse-alerts-queue-dev `
+  --profile $PROFILE `
+  --endpoint-url $ENDPOINT `
+  --region $REGION
+
 # SES
 Write-Host "Verifying SES email identity..."
 aws ses verify-email-identity `

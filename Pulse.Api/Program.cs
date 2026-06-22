@@ -31,18 +31,19 @@ builder.Services.AddStatusPages(builder.Configuration.GetConnectionString("Defau
 builder.Services.AddBilling(builder.Configuration.GetConnectionString("DefaultConnection")!);
 
 var app = builder.Build();
-app.Use(async (context, next) =>
-{
-    context.Request.EnableBuffering();
-    await next();
-});
+
+//app.Use(async (context, next) =>
+//{
+//    context.Request.EnableBuffering();
+//    await next();
+//});
 
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.MapScalarApiReference();
 }
-app.UseHttpsRedirection();
+app.UseHttpsRedirection();//
 app.UseMiddleware<ExceptionMiddleware>();
 //app.UseStatusCodePages(async context =>
 //{
