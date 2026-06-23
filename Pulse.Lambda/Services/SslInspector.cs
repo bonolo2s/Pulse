@@ -18,7 +18,7 @@ public class SslInspector
         await sslStream.AuthenticateAsClientAsync(uri.Host);
 
         var certificate = sslStream.RemoteCertificate!;
-        var expiryDate = DateTime.Parse(certificate.GetExpirationDateString());
+        var expiryDate = DateTime.Parse(certificate.GetExpirationDateString(), null, System.Globalization.DateTimeStyles.AssumeUniversal | System.Globalization.DateTimeStyles.AdjustToUniversal);
         var issuer = certificate.Issuer;
         var isExpiringSoon = expiryDate <= DateTime.UtcNow.AddDays(ExpiryThresholdDays);
 
