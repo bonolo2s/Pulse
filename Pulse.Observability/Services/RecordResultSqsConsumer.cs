@@ -29,25 +29,16 @@ public class RecordResultSqsConsumer : BackgroundService
                 WaitTimeSeconds = 20
             }, stoppingToken);
 
-            if (response.Messages.Count == 0)
-            {
-                Console.WriteLine("[RecordResultSqsConsumer] Poll returned no messages.");//
-            }
-
             foreach (var message in response.Messages)
             {
-                Console.WriteLine($"[RecordResultSqsConsumer] Received message {message.MessageId}");//
                 try
                 {
                     using var scope = _scopeFactory.CreateScope();
                     var processor = scope.ServiceProvider.GetRequiredService<IRecordResultMessageProcessor>();
 
-                    Console.WriteLine($"[RecordResultSqsConsumer] Processing message {message.MessageId}");//
                     await processor.ProcessAsync(message.Body, stoppingToken);
-                    Console.WriteLine($"[RecordResultSqsConsumer] Processed message {message.MessageId}");//
 
                     await _sqsClient.DeleteMessageAsync(_queueUrl, message.ReceiptHandle, stoppingToken);
-                    Console.WriteLine($"[RecordResultSqsConsumer] Deleted message {message.MessageId}");//
                 }
                 catch (Exception ex)
                 {
