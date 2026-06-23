@@ -24,7 +24,7 @@ public static class DependencyInjection
         services.AddSingleton<IEmailSender>(sp =>
         {
             var ses = sp.GetRequiredService<IAmazonSimpleEmailService>();
-            var fromAddress = configuration["AWS__SES__FROMADDRESS"]!;
+            var fromAddress = configuration["Aws:Ses:FromAddress"]!;
             return new SesEmailSender(ses, fromAddress);
         });
 
