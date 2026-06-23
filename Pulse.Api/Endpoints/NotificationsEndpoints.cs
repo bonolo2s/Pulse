@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Microsoft.AspNetCore.Mvc;
 using Pulse.Notifications.Commands;
 using Pulse.Notifications.DTOs;
 using Pulse.Notifications.Entities;
@@ -15,55 +16,63 @@ public static class NotificationsEndpoints
     {
         var group = app.MapGroup("/api/notifications");
 
-        group.MapPost("/sns", async (HttpRequest request, HttpClient httpClient) =>
+        //group.MapPost("/sns", async (HttpRequest request, HttpClient httpClient) =>
+        //{
+        //    Console.WriteLine("Got SNS payload");
+
+        //    request.Body.Position = 0;
+
+        //    using var reader = new StreamReader(request.Body, leaveOpen: true);
+        //    var body = await reader.ReadToEndAsync();
+
+        //    Console.WriteLine($"Raw body: {body}");
+
+        //    if (string.IsNullOrWhiteSpace(body))
+        //        return Results.BadRequest(ApiResponse<object>.Failure("Empty request body."));
+
+        //    var payload = JsonSerializer.Deserialize<JsonElement>(body);
+
+        //    string type = payload.GetProperty("Type").GetString();
+
+        //    if (type == "SubscriptionConfirmation")
+        //    {
+        //        string subscribeUrl = payload.GetProperty("SubscribeURL").GetString();
+        //        await httpClient.GetAsync(subscribeUrl);
+        //        return Results.Ok(ApiResponse<object>.Success(null, "Subscription confirmed."));
+        //    }
+        //    else if (type == "Notification")
+        //    {
+        //        string message = payload.GetProperty("Message").GetString();
+        //        Console.WriteLine($"Received SNS message: {message}");
+        //        return Results.Ok(ApiResponse<object>.Success(null, "Notification received."));
+        //    }
+
+        //    return Results.BadRequest(ApiResponse<object>.Failure("Unsupported SNS message type."));
+        //})
+        //.Produces<ApiResponse<object>>(200)
+        //.Produces<ApiResponse<object>>(400)
+        //.WithName("SnsHandler")
+        //.WithTags("Notifications")
+        //.WithOpenApi();
+
+
+
+        group.MapPost("/trigger-alert", async (SnsEnvelope envelope, IMediator mediator, [FromServices] HttpClient httpClient) =>
         {
             Console.WriteLine("Got SNS payload");
 
-            request.Body.Position = 0;
-
-            using var reader = new StreamReader(request.Body, leaveOpen: true);
-            var body = await reader.ReadToEndAsync();
-
-            Console.WriteLine($"Raw body: {body}");
-
-            if (string.IsNullOrWhiteSpace(body))
-                return Results.BadRequest(ApiResponse<object>.Failure("Empty request body."));
-
-            var payload = JsonSerializer.Deserialize<JsonElement>(body);
-
-            string type = payload.GetProperty("Type").GetString();
-
-            if (type == "SubscriptionConfirmation")
+            if (envelope.Type == "SubscriptionConfirmation")
             {
-                string subscribeUrl = payload.GetProperty("SubscribeURL").GetString();
-                await httpClient.GetAsync(subscribeUrl);
+                Console.WriteLine("Triggering the handshake route.");
+                await httpClient.GetAsync(envelope.SubscribeURL);
                 return Results.Ok(ApiResponse<object>.Success(null, "Subscription confirmed."));
             }
-            else if (type == "Notification")
-            {
-                string message = payload.GetProperty("Message").GetString();
-                Console.WriteLine($"Received SNS message: {message}");
-                return Results.Ok(ApiResponse<object>.Success(null, "Notification received."));
-            }
 
-            return Results.BadRequest(ApiResponse<object>.Failure("Unsupported SNS message type."));
-        })
-        .Produces<ApiResponse<object>>(200)
-        .Produces<ApiResponse<object>>(400)
-        .WithName("SnsHandler")
-        .WithTags("Notifications")
-        .WithOpenApi();
-
-
-
-        group.MapPost("/trigger-alert", async (HttpContext ctx, IMediator mediator) =>
-        {
-            var envelope = await JsonSerializer.DeserializeAsync<SnsEnvelope>(ctx.Request.Body);
-            var dto = JsonSerializer.Deserialize<AlertNotificationDto>(envelope!.Message);
-            await mediator.Send(new TriggerAlertCommand(dto!.Result));
+            var dto = JsonSerializer.Deserialize<AlertNotificationDto>(envelope.Message);
+            await mediator.Send(new TriggerAlertCommand(dto!.Result));//
             return Results.NoContent();
         })
-                .WithName("TriggerAlert") // fired by lambda when  down
+        .WithName("TriggerAlert") // fired by Lambda/SNS
         .WithTags("Notifications")
         .WithOpenApi();
 
@@ -72,7 +81,7 @@ public static class NotificationsEndpoints
             await mediator.Send(new ResolveAlertCommand(endpointId));
             return Results.NoContent();
         })
-        .WithName("ResolveAlert") // fired by lambda when  up/auto healed
+        .WithName("ResolveAlert") // fired by Lambda/S
         .WithTags("Notifications")
         .WithOpenApi();
 

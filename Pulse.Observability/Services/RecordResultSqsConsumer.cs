@@ -29,6 +29,8 @@ public class RecordResultSqsConsumer : BackgroundService
                 WaitTimeSeconds = 20
             }, stoppingToken);
 
+            if (response.Messages == null || !response.Messages.Any()) continue;
+
             foreach (var message in response.Messages)
             {
                 try
