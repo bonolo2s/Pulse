@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using Amazon.SQS;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Pulse.Notifications.DataAccess;
 using Pulse.Notifications.Interfaces;
@@ -12,12 +13,12 @@ public static class DependencyInjection
     {
         services.AddDbContext<NotificationsDbContext>(options =>
             options.UseNpgsql(connectionString));
-
         services.AddMediatR(cfg =>
             cfg.RegisterServicesFromAssembly(typeof(DependencyInjection).Assembly));
-
         services.AddScoped<INotificationService, NotificationService>();
-
+        services.AddAWSService<IAmazonSQS>();
+        services.AddScoped<ITriggerAlertMessageProcessor, TriggerAlertMessageProcessor>();
+        services.AddHostedService<TriggerAlertSqsConsumer>();
         return services;
     }
 }
