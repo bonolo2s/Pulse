@@ -42,12 +42,14 @@ public class TriggerAlertSqsConsumer : BackgroundService
                     using var scope = _scopeFactory.CreateScope();
                     var processor = scope.ServiceProvider.GetRequiredService<ITriggerAlertMessageProcessor>();
                     await processor.ProcessAsync(message.Body, stoppingToken);
-                    await _sqsClient.DeleteMessageAsync(_queueUrl, message.ReceiptHandle, stoppingToken);
                 }
                 catch (Exception ex)
                 {
                     Console.WriteLine($"[TriggerAlertSqsConsumer] Failed to process message {message.MessageId}: {ex.Message}");
+                    continue;
                 }
+
+                await _sqsClient.DeleteMessageAsync(_queueUrl, message.ReceiptHandle, stoppingToken);
             }
         }
     }

@@ -8,7 +8,7 @@ namespace Pulse.Notifications.Services;
 
 public class TriggerAlertMessageProcessor : ITriggerAlertMessageProcessor
 {
-    private readonly IMediator _mediator;//
+    private readonly IMediator _mediator;
 
     public TriggerAlertMessageProcessor(IMediator mediator)
     {
