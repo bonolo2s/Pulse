@@ -18,7 +18,7 @@ builder.Services.AddDefaultAWSOptions(new Amazon.Extensions.NETCore.Setup.AWSOpt
 {
     Region = Amazon.RegionEndpoint.EUWest1,
     Credentials = new Amazon.Runtime.BasicAWSCredentials("test", "test"),
-    DefaultClientConfig = { ServiceURL = "http://localhost:4566" }
+    DefaultClientConfig = { ServiceURL = "http://localhost:4566", AuthenticationRegion = "eu-west-1" } // The important one. url endpoint to avoid hitting real AWS services
 });
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddIdentity(
