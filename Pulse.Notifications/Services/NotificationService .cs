@@ -22,12 +22,12 @@ public class NotificationService : INotificationService
     public async Task TriggerAlertAsync(HealthCheckResult result)
     {
         var rules = await _context.AlertRules
-            .Where(r => r.IsActive)
+            .Where(r => r.IsActive && r.UserId == result.UserId)
             .ToListAsync();
 
         foreach (var rule in rules)
         {
-            var hasUnacknowledged = await _context.AlertLogs 
+            var hasUnacknowledged = await _context.AlertLogs
                 .AnyAsync(l => l.EndpointId == result.EndpointId
                     && l.AlertRuleId == rule.Id
                     && !l.IsAcknowledged);
