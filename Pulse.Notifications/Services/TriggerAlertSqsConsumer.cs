@@ -33,7 +33,11 @@ public class TriggerAlertSqsConsumer : BackgroundService
                 WaitTimeSeconds = 20
             }, stoppingToken);
 
-            if (response.Messages == null || !response.Messages.Any()) continue;
+            if (response.Messages == null || !response.Messages.Any())
+            {
+                Console.WriteLine("No messages found");
+                continue;
+            }
 
             foreach (var message in response.Messages)
             {

@@ -19,7 +19,7 @@ public class EndpointRepository : IEndpointRepository
         using var connection = new NpgsqlConnection(_connectionString);
 
         const string sql = """
-            SELECT "Id", "Url", "IntervalSeconds"
+            SELECT "Id", "UserId", "Url", "IntervalSeconds"
             FROM "MonitoredEndpoints"
             WHERE "IntervalSeconds" = @IntervalSeconds
             AND "IsActive" = true

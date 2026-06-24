@@ -27,12 +27,17 @@ public class NotificationService : INotificationService
 
         foreach (var rule in rules)
         {
-            var hasUnacknowledged = await _context.AlertLogs //
+            var hasUnacknowledged = await _context.AlertLogs 
                 .AnyAsync(l => l.EndpointId == result.EndpointId
                     && l.AlertRuleId == rule.Id
                     && !l.IsAcknowledged);
 
-            if (hasUnacknowledged) continue;
+            if (hasUnacknowledged)
+            {
+                Console.WriteLine($"[TriggerAlertAsync] Skipped — unacknowledged alert exists for EndpointId={result.EndpointId}, RuleId={rule.Id}");
+                continue;
+            }
+
 
             var type = result.Status switch
             {
@@ -78,7 +83,8 @@ public class NotificationService : INotificationService
 
     public async Task DispatchEmailNotificationAsync(AlertLog log)
     {
-        var rule = await _context.AlertRules.FindAsync(log.AlertRuleId);// i need destination
+        Console.WriteLine("********Dispatch email notification got hit");
+        var rule = await _context.AlertRules.FindAsync(log.AlertRuleId);
         await _emailSender.SendAsync(
             to: rule!.Destination,
             subject: $"Pulse Alert: {log.Type}",

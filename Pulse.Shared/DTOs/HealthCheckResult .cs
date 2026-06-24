@@ -5,6 +5,7 @@ namespace Pulse.Shared.DTOs;
 public class HealthCheckResult
 {
     public Guid EndpointId { get; set; }
+    public Guid UserId { get; set; }
     public EndpointStatus Status { get; set; } // Operational | Degraded | Downtime
     public int StatusCode { get; set; } // from the MonitoredEnd , e.g 0 couldnt connect at all TimeOut
     public long LatencyMs { get; set; }

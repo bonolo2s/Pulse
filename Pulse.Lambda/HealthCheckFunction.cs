@@ -40,6 +40,8 @@ public class HealthCheckFunction
         {
             context.Logger.LogInformation($"Checking endpoint: {endpoint.Url}");
             var result = await _healthCheckService.RunHealthCheckAsync(endpoint.Id, endpoint.Url);
+            result.UserId = endpoint.UserId;
+
             context.Logger.LogInformation($"Result: {result.Status} | StatusCode: {result.StatusCode} | Latency: {result.LatencyMs}ms");
 
             await _snsPublisher.PublishAlertAsync(new AlertNotificationDto

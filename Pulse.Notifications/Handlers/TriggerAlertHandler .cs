@@ -15,6 +15,7 @@ public class TriggerAlertHandler : IRequestHandler<TriggerAlertCommand>
 
     public async Task Handle(TriggerAlertCommand request, CancellationToken cancellationToken)
     {
+        Console.WriteLine("TriggerAlert got hit");
         await _notificationService.TriggerAlertAsync(request.Result);
     }
 }
