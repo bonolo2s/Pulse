@@ -53,7 +53,7 @@ public class TriggerAlertSqsConsumer : BackgroundService
                     continue;
                 }
 
-                await _sqsClient.DeleteMessageAsync(_queueUrl, message.ReceiptHandle, stoppingToken);
+                await _sqsClient.DeleteMessageAsync(_queueUrl, message.ReceiptHandle, stoppingToken);//need to revise this...whats my POI for failure
             }
         }
     }

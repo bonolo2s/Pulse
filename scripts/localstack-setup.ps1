@@ -15,7 +15,7 @@ aws sns create-topic `
 # SQS
 Write-Host "Creating SQS queue..."
 aws sqs create-queue `
-  --queue-name pulse-alerts-queue-dev `
+  --queue-name pulse-record-results-queue-dev `
   --profile $PROFILE `
   --endpoint-url $ENDPOINT `
   --region $REGION

@@ -35,7 +35,7 @@ public class NotificationService : INotificationService
             if (hasUnacknowledged)
             {
                 Console.WriteLine($"[TriggerAlertAsync] Skipped — unacknowledged alert exists for EndpointId={result.EndpointId}, RuleId={rule.Id}");
-                continue;
+                continue; // already exits dont save a new one n alert..
             }
 
 
