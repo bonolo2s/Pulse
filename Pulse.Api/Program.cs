@@ -29,6 +29,15 @@ builder.Services.AddObservability(builder.Configuration.GetConnectionString("Def
 builder.Services.AddNotifications(builder.Configuration.GetConnectionString("DefaultConnection")!);
 builder.Services.AddStatusPages(builder.Configuration.GetConnectionString("DefaultConnection")!);
 builder.Services.AddBilling(builder.Configuration.GetConnectionString("DefaultConnection")!);
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("FrontendDev", policy =>
+    {
+        policy.WithOrigins("http://localhost:3000")
+              .AllowAnyHeader()
+              .AllowAnyMethod();
+    });
+});
 
 var app = builder.Build();
 
@@ -44,6 +53,7 @@ if (app.Environment.IsDevelopment())
     app.MapScalarApiReference();
 }
 app.UseHttpsRedirection();//
+app.UseCors("FrontendDev");
 app.UseMiddleware<ExceptionMiddleware>();
 //app.UseStatusCodePages(async context =>
 //{
