@@ -8,4 +8,5 @@ public interface IObservabilityService
     Task<IEnumerable<CheckResult>> GetUptimeHistoryAsync(Guid endpointId, int days);
     Task<IEnumerable<CheckResult>> GetLatencyTrendsAsync(Guid endpointId, int days);
     Task<CheckResult?> GetSslExpiryStatusAsync(Guid endpointId);
+    Task<CheckResult?> GetLatestCheckResultAsync(Guid endpointId);
 }

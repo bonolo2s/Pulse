@@ -50,4 +50,12 @@ public class ObservabilityService : IObservabilityService
             .OrderByDescending(c => c.CheckedAt)
             .FirstOrDefaultAsync();
     }
+
+    public async Task<CheckResult?> GetLatestCheckResultAsync(Guid endpointId)
+    {
+        return await _context.CheckResults
+            .Where(c => c.EndpointId == endpointId)
+            .OrderByDescending(c => c.CheckedAt)
+            .FirstOrDefaultAsync();
+    }
 }
