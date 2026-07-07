@@ -2,6 +2,7 @@
 using Pulse.Monitoring.Commands;
 using Pulse.Monitoring.DTOs;
 using Pulse.Monitoring.Queries;
+using Pulse.Observability.Interfaces;
 using Pulse.Shared.Results;
 
 namespace Pulse.Api.Endpoints;
@@ -108,21 +109,29 @@ public static class MonitoringEndpoints
         .WithOpenApi()
         .RequireAuthorization();
 
-        group.MapGet("/get-endpoints/{userId:guid}", async (Guid userId, IMediator mediator) =>
+        group.MapGet("/get-endpoints/{userId:guid}", async (Guid userId, IMediator mediator, IObservabilityService observability) =>
         {
             var results = await mediator.Send(new GetEndpointsQuery(userId));
-            return Results.Ok(ApiResponse<IEnumerable<EndpointResponse>>.Success(results.Select(e => new EndpointResponse
+            var enriched = await Task.WhenAll(results.Select(async e =>
             {
-                Id = e.Id,
-                UserId = e.UserId,
-                Name = e.Name,
-                Url = e.Url,
-                Method = e.Method,
-                IntervalSeconds = e.IntervalSeconds,
-                TimeoutMs = e.TimeoutMs,
-                IsActive = e.IsActive,
-                CreatedAt = e.CreatedAt
-            }), "Endpoints retrieved successfully."));
+                var latest = await observability.GetLatestCheckResultAsync(e.Id);
+                return new EndpointResponse
+                {
+                    Id = e.Id,
+                    UserId = e.UserId,
+                    Name = e.Name,
+                    Url = e.Url,
+                    Method = e.Method,
+                    IntervalSeconds = e.IntervalSeconds,
+                    TimeoutMs = e.TimeoutMs,
+                    IsActive = e.IsActive,
+                    CreatedAt = e.CreatedAt,
+                    Status = latest?.Status.ToString(),
+                    LatencyMs = latest?.LatencyMs,
+                    LastCheckedAt = latest?.CheckedAt
+                };
+            }));
+            return Results.Ok(ApiResponse<IEnumerable<EndpointResponse>>.Success(enriched, "Endpoints retrieved successfully."));
         })
         .Produces<ApiResponse<IEnumerable<EndpointResponse>>>(200)
         .Produces<ApiResponse<object>>(401)

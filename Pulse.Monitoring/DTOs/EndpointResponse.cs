@@ -9,6 +9,9 @@ public class EndpointResponse
     public string Method { get; set; } = string.Empty;
     public int IntervalSeconds { get; set; }
     public int TimeoutMs { get; set; }
+    public string? Status { get; set; }
+    public long? LatencyMs { get; set; }
+    public DateTime? LastCheckedAt { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
 }
