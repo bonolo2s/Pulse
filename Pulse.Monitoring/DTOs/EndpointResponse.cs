@@ -14,4 +14,5 @@ public class EndpointResponse
     public DateTime? LastCheckedAt { get; set; }
     public bool IsActive { get; set; }
     public DateTime CreatedAt { get; set; }
+    public double? UptimePercentage { get; set; }
 }

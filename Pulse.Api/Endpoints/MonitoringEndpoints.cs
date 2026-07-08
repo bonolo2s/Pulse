@@ -116,6 +116,7 @@ public static class MonitoringEndpoints
             {
                 var latest = await observability.GetLatestCheckResultAsync(e.Id);
                 var uptime = await observability.GetUptimePercentageAsync(e.Id);
+
                 return new EndpointResponse
                 {
                     Id = e.Id,
@@ -129,7 +130,9 @@ public static class MonitoringEndpoints
                     CreatedAt = e.CreatedAt,
                     Status = latest?.Status.ToString(),
                     LatencyMs = latest?.LatencyMs,
-                    LastCheckedAt = latest?.CheckedAt
+                    LastCheckedAt = latest?.CheckedAt,
+                    UptimePercentage = uptime
+
                 };
             }));
             return Results.Ok(ApiResponse<IEnumerable<EndpointResponse>>.Success(enriched, "Endpoints retrieved successfully."));
