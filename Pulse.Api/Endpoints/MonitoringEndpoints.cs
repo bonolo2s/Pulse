@@ -112,10 +112,15 @@ public static class MonitoringEndpoints
         group.MapGet("/get-endpoints/{userId:guid}", async (Guid userId, IMediator mediator, IObservabilityService observability) =>
         {
             var results = await mediator.Send(new GetEndpointsQuery(userId));
-            var enriched = await Task.WhenAll(results.Select(async e =>
+            var ids = results.Select(e => e.Id).ToList();
+
+            var latestResults = await observability.GetLatestCheckResultsAsync(ids);
+            var uptimes = await observability.GetUptimePercentagesAsync(ids);
+
+            var enriched = results.Select(e =>
             {
-                var latest = await observability.GetLatestCheckResultAsync(e.Id);
-                var uptime = await observability.GetUptimePercentageAsync(e.Id);
+                latestResults.TryGetValue(e.Id, out var latest);
+                uptimes.TryGetValue(e.Id, out var uptime);
 
                 return new EndpointResponse
                 {
@@ -132,12 +137,12 @@ public static class MonitoringEndpoints
                     LatencyMs = latest?.LatencyMs,
                     LastCheckedAt = latest?.CheckedAt,
                     UptimePercentage = uptime
-
                 };
-            }));
+            });
+
             return Results.Ok(ApiResponse<IEnumerable<EndpointResponse>>.Success(enriched, "Endpoints retrieved successfully."));
         })
-        .Produces<ApiResponse<IEnumerable<EndpointResponse>>>(200)
+                .Produces<ApiResponse<IEnumerable<EndpointResponse>>>(200)
         .Produces<ApiResponse<object>>(401)
         .Produces<ApiResponse<object>>(404)
         .Produces<ApiResponse<object>>(500)
