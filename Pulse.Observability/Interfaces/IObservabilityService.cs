@@ -10,4 +10,6 @@ public interface IObservabilityService
     Task<CheckResult?> GetSslExpiryStatusAsync(Guid endpointId);
     Task<CheckResult?> GetLatestCheckResultAsync(Guid endpointId);
     Task<double> GetUptimePercentageAsync(Guid endpointId, int days = 30);
+    Task<Dictionary<Guid, CheckResult>> GetLatestCheckResultsAsync(IEnumerable<Guid> endpointIds);
+    Task<Dictionary<Guid, double>> GetUptimePercentagesAsync(IEnumerable<Guid> endpointIds, int days = 30);
 }
