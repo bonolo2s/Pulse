@@ -115,6 +115,7 @@ public static class MonitoringEndpoints
             var enriched = await Task.WhenAll(results.Select(async e =>
             {
                 var latest = await observability.GetLatestCheckResultAsync(e.Id);
+                var uptime = await observability.GetUptimePercentageAsync(e.Id);
                 return new EndpointResponse
                 {
                     Id = e.Id,
