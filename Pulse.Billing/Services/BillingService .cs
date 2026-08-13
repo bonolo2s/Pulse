@@ -18,7 +18,7 @@ public class BillingService : IBillingService, IBillingValidator, ISubscriptionC
     public async Task<Subscription> CreateSubscriptionAsync(Subscription subscription)
     {
         subscription.Id = Guid.NewGuid();
-        subscription.Plan = "Free";
+        subscription.Plan = SubscriptionPlan.Free;
         subscription.EndpointLimit = 3;
         subscription.StartedAt = DateTime.UtcNow;
         subscription.IsActive = true;
@@ -35,7 +35,7 @@ public class BillingService : IBillingService, IBillingValidator, ISubscriptionC
             .FirstOrDefaultAsync(s => s.UserId == userId && s.IsActive)
             ?? throw new KeyNotFoundException($"Subscription for user {userId} not found.");
 
-        subscription.Plan = "Pro";
+        subscription.Plan = SubscriptionPlan.Pro;
         subscription.EndpointLimit = int.MaxValue;
         subscription.StartedAt = DateTime.UtcNow;
         subscription.ExpiresAt = DateTime.UtcNow.AddMonths(1);
@@ -88,7 +88,7 @@ public class BillingService : IBillingService, IBillingValidator, ISubscriptionC
                 .FirstOrDefaultAsync(s => s.Id == invoice.SubscriptionId)
                 ?? throw new KeyNotFoundException($"Subscription {invoice.SubscriptionId} not found.");
 
-            subscription.Plan = "Pro";
+            subscription.Plan = SubscriptionPlan.Pro;
             subscription.EndpointLimit = int.MaxValue;
             subscription.ExpiresAt = DateTime.UtcNow.AddMonths(1);
         }
@@ -112,7 +112,7 @@ public class BillingService : IBillingService, IBillingValidator, ISubscriptionC
         {
             Id = Guid.NewGuid(),
             UserId = userId,
-            Plan = "Free",
+            Plan = SubscriptionPlan.Pro,
             EndpointLimit = 3,
             StartedAt = DateTime.UtcNow,
             IsActive = true

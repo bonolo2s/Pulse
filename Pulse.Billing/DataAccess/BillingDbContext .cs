@@ -17,7 +17,10 @@ public class BillingDbContext : DbContext
         modelBuilder.Entity<Subscription>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.Plan).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.Plan)
+                .IsRequired()
+                .HasConversion<string>()
+                .HasMaxLength(20);
             entity.Property(e => e.EndpointLimit).IsRequired();
             entity.Property(e => e.StartedAt).IsRequired();
             entity.Property(e => e.IsActive).IsRequired();
