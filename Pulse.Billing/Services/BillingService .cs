@@ -103,7 +103,7 @@ public class BillingService : IBillingService, IBillingValidator, ISubscriptionC
             ?? throw new KeyNotFoundException($"Subscription for user {userId} not found.");
 
         if (currentEndpointCount >= subscription.EndpointLimit)
-            throw new InvalidOperationException($"Endpoint limit of {subscription.EndpointLimit} reached. Upgrade to Pro.");
+            throw new InvalidOperationException($"Endpoint limit of {subscription.EndpointLimit} reached. Go Pro for unlimited monitoring.");
     }
 
     public async Task CreateSubscriptionAsync(Guid userId)
