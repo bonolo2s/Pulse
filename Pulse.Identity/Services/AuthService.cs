@@ -31,7 +31,7 @@ public class AuthService : IAuthService
 
         user.Id = Guid.NewGuid();
         user.PasswordHash = BCrypt.Net.BCrypt.HashPassword(password);
-        user.Plan = "Free";//
+       //user.Plan = "Free";//
         user.CreatedAt = DateTime.UtcNow;
         user.IsActive = true;
 

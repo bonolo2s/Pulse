@@ -27,7 +27,7 @@ public static class IdentityEndpoints
                 Id = result.Id,
                 FullName = result.FullName,
                 Email = result.Email,
-                Plan = result.Plan,
+                //Plan = result.Plan,
                 CreatedAt = result.CreatedAt,
                 IsActive = result.IsActive
             }, "User registered successfully."));
@@ -61,7 +61,7 @@ public static class IdentityEndpoints
                 Id = result.Id,
                 FullName = result.FullName,
                 Email = result.Email,
-                Plan = result.Plan,
+                //Plan = result.Plan,
                 CreatedAt = result.CreatedAt,
                 IsActive = result.IsActive
             }, "User retrieved successfully."));
@@ -90,7 +90,7 @@ public static class IdentityEndpoints
                 Id = result.Id,
                 FullName = result.FullName,
                 Email = result.Email,
-                Plan = result.Plan,
+                //Plan = result.Plan,
                 CreatedAt = result.CreatedAt,
                 IsActive = result.IsActive
             }, "User updated successfully."));

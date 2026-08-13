@@ -32,7 +32,7 @@ namespace Pulse.Identity.Services
                 new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
                 new Claim(JwtRegisteredClaimNames.Email, user.Email),
                 new Claim("displayName", user.FullName ?? string.Empty),
-                new Claim("tier", user.Plan ?? "Free")
+                //new Claim("tier", user.Plan ?? "Free")
             };
 
             var token = new JwtSecurityToken(
@@ -54,7 +54,7 @@ namespace Pulse.Identity.Services
                     Id = user.Id,
                     Email = user.Email,
                     DisplayName = user.FullName ?? string.Empty,
-                    Tier = user.Plan ?? "Free"
+                    //Tier = user.Plan ?? "Free"
                 }
             };
         }
