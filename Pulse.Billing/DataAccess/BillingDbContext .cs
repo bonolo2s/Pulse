@@ -25,7 +25,7 @@ public class BillingDbContext : DbContext
             entity.Property(e => e.EndpointLimit).IsRequired();
             entity.Property(e => e.StartedAt).IsRequired();
             entity.Property(e => e.IsActive).IsRequired();
-            entity.HasIndex(e => e.UserId).IsUnique();
+            entity.HasIndex(e => e.UserId);
         });
 
         modelBuilder.Entity<Invoice>(entity =>
