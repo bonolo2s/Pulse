@@ -7,7 +7,7 @@ public class BillingEvent
     public PaystackEventType EventType { get; init; }//
     public Guid? UserId { get; init; } // nullable — may not resolve if payload is malformed/unmatched
     public string Payload { get; init; } = string.Empty; // raw JSON, dont ever mod this
-    public bool Processed { get; set; }
     public DateTime ReceivedAt { get; init; }
     public DateTime? ProcessedAt { get; set; }
+    public bool Processed { get; set; }
 }

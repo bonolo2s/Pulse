@@ -1,6 +1,6 @@
 ﻿namespace Pulse.Billing.Entities;
 
-public enum PaystackEventType
+public enum BillingEventType
 {
     PaymentInitiated,
     PaymentPending,
