@@ -4,6 +4,8 @@ public enum PaystackEventType
 {
     PaymentInitiated,
     PaymentPending,
+    PaymentProviderReferenceCreated,
+    PaymentProcessing,
     PaymentSuccessful,
     PaymentFailed,
 
