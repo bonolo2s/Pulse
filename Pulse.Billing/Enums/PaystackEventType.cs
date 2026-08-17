@@ -1,9 +1,15 @@
 ﻿namespace Pulse.Billing.Entities;
 
-public enum PaystackEventType
+public enum BillingEventType
 {
+    PaymentInitiated,
+    PaymentPending,
+    PaymentSuccessful,
+    PaymentFailed,
+
     ChargeSuccess,
     ChargeFailed,
-    SubscriptionDisable,
-    SubscriptionEnable
+
+    SubscriptionEnable,
+    SubscriptionDisable
 }
