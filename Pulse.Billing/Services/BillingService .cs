@@ -15,19 +15,34 @@ public class BillingService : IBillingService, IBillingValidator, ISubscriptionC
         _context = context;
     }
 
-    //public async Task<Subscription> CreateSubscriptionAsync(Subscription subscription)
-    //{
-    //    subscription.Id = Guid.NewGuid();
-    //    subscription.Plan = SubscriptionPlan.Free;
-    //    subscription.EndpointLimit = 3;
-    //    subscription.StartedAt = DateTime.UtcNow;
-    //    subscription.IsActive = true;
+    public async Task<Subscription> CreateSubscriptionAsync(Subscription subscription) // Not a conflict .Admin might need it 
+    {
+        subscription.Id = Guid.NewGuid();
+        subscription.Plan = SubscriptionPlan.Free;
+        subscription.EndpointLimit = 3;
+        subscription.StartedAt = DateTime.UtcNow;
+        subscription.IsActive = true;
 
-    //    _context.Subscriptions.Add(subscription);
-    //    await _context.SaveChangesAsync();
+        _context.Subscriptions.Add(subscription);
+        await _context.SaveChangesAsync();
 
-    //    return subscription;
-    //}
+        return subscription;
+    }
+    public async Task CreateSubscriptionAsync(Guid userId) // used by auth on Register
+    {
+        var subscription = new Subscription
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            Plan = SubscriptionPlan.Free,
+            EndpointLimit = 3,
+            StartedAt = DateTime.UtcNow,
+            IsActive = true
+        };
+
+        _context.Subscriptions.Add(subscription);
+        await _context.SaveChangesAsync();
+    }
 
     public async Task<Subscription> UpgradeToProAsync(Guid userId)
     {
@@ -104,21 +119,5 @@ public class BillingService : IBillingService, IBillingValidator, ISubscriptionC
 
         if (currentEndpointCount >= subscription.EndpointLimit)
             throw new InvalidOperationException($"Endpoint limit of {subscription.EndpointLimit} reached. Go Pro for unlimited monitoring.");
-    }
-
-    public async Task CreateSubscriptionAsync(Guid userId)
-    {
-        var subscription = new Subscription
-        {
-            Id = Guid.NewGuid(),
-            UserId = userId,
-            Plan = SubscriptionPlan.Free,
-            EndpointLimit = 3,
-            StartedAt = DateTime.UtcNow,
-            IsActive = true
-        };
-
-        _context.Subscriptions.Add(subscription);
-        await _context.SaveChangesAsync();
     }
 }
