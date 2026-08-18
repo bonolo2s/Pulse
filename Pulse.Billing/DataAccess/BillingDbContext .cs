@@ -13,6 +13,8 @@ public class BillingDbContext : DbContext
     public DbSet<Invoice> Invoices { get; set; } = null!;
     public DbSet<BillingEvent> BillingEvents { get; set; } = null!;
 
+    public DbSet<Payment> Payments { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Subscription>(entity =>
@@ -51,6 +53,16 @@ public class BillingDbContext : DbContext
             entity.Property(e => e.Processed).IsRequired();
             entity.Property(e => e.ReceivedAt).IsRequired();
             entity.HasIndex(e => e.PaystackEventId).IsUnique();
+        });
+
+        modelBuilder.Entity<Payment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Amount).IsRequired().HasColumnType("decimal(18,2)");
+            entity.Property(e => e.Status).IsRequired().HasConversion<string>();
+            entity.Property(e => e.Method).IsRequired().HasConversion<string>();
+            entity.Property(e => e.Provider).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.CreatedAt).IsRequired();
         });
     }
 }

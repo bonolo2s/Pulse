@@ -1,12 +1,24 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using Pulse.Billing.Payments.Paystack.DTOs;
 
-namespace Pulse.Billing.Payments
+namespace Pulse.Billing.Payments;
+
+public interface IPaymentProvider
 {
-    internal interface IPaymentProvider
-    {
-    }
+    Task<InitializeTransactionResult> InitializeTransaction(InitializeTransactionRequest request);
+
+    Task<VerifyTransactionResult> VerifyTransaction(string reference);// fallback for Ghost webhooks that dont arrive
+
+    Task<CreateCustomerResult> CreateCustomer(CreateCustomerRequest request);
+
+    Task<CustomerResult> GetCustomer(string customerCode);
+
+    Task<CreateSubscriptionResult> CreateSubscription(CreateSubscriptionRequest request);
+
+    Task<SubscriptionResult> GetSubscription(string subscriptionCode);
+
+    Task<DisableSubscriptionResult> DisableSubscription(DisableSubscriptionRequest request);
+
+    Task<ChargeAuthorizationResult> ChargeAuthorization(ChargeAuthorizationRequest request);
+
+    Task<ListBanksResult> ListBanks();
 }
