@@ -9,6 +9,7 @@ namespace Pulse.Billing.Payments.Paystack.DTOs
     public record InitializeTransactionRequest(
         string Email,
         decimal Amount,
-        string Currency
+        string Currency,
+        string CallbackUrl
     );
 }
