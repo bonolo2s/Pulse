@@ -50,15 +50,19 @@ public class BillingService : IBillingService, IBillingValidator, ISubscriptionC
             .FirstOrDefaultAsync(s => s.UserId == userId && s.IsActive)
             ?? throw new KeyNotFoundException($"Subscription for user {userId} not found.");
 
+        // RESERVED: only call this after Paystack payment is confirmed (webhook or verify fallback).
+        // TODO: add fault tolerance here — retry on transient DB failure before returning success to caller.
+
         subscription.Plan = SubscriptionPlan.Pro;
         subscription.EndpointLimit = int.MaxValue;
         subscription.StartedAt = DateTime.UtcNow;
         subscription.ExpiresAt = DateTime.UtcNow.AddMonths(1);
 
         await _context.SaveChangesAsync();
-
         return subscription;
     }
+
+    // TODO: VerifySubscriptionUpgradeAsync — fallback path for when webhook doesn't arrive (Ghost webhook)/ after cetain time
 
     public async Task CancelSubscriptionAsync(Guid userId)
     {
