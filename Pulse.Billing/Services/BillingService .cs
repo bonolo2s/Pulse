@@ -1,6 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Pulse.Billing.DataAccess;
 using Pulse.Billing.Entities;
+using Pulse.Billing.Enums;
 using Pulse.Billing.Interfaces;
 using Pulse.Shared.Interfaces;
 
@@ -70,6 +71,8 @@ public class BillingService : IBillingService, IBillingValidator, ISubscriptionC
             .FirstOrDefaultAsync(s => s.UserId == userId && s.IsActive)
             ?? throw new KeyNotFoundException($"Subscription for user {userId} not found.");
 
+        // TODO: call IPaymentProvider.DisableSubscription to stop future Paystack billing
+        // TODO: don't cut access immediately — let ExpiresAt (already paid period) run out, only flip IsActive when it lapses
         subscription.IsActive = false;
         subscription.ExpiresAt = DateTime.UtcNow;
 
@@ -91,16 +94,27 @@ public class BillingService : IBillingService, IBillingValidator, ISubscriptionC
             .ToListAsync();
     }
 
-    public async Task SyncPaymentWebhookAsync(string paymentReference, string status)
+    public async Task ProcessPaymentResultAsync(string paymentReference, string status) //**
     {
+        var payment = await _context.Payments
+            .FirstOrDefaultAsync(p => p.ProviderReference == paymentReference)
+            ?? throw new KeyNotFoundException($"Payment with reference {paymentReference} not found.");
+
+        // TODO: idempotency check — look up BillingEvent by PaystackEventId, skip if already Processed
+
+        if (!Enum.TryParse<PaymentStatus>(status, ignoreCase: true, out var parsedStatus))
+            throw new InvalidOperationException($"Unrecognized payment status: {status}");
+
+        payment.Status = parsedStatus;
+        payment.CompletedAt = DateTime.UtcNow;
+
         var invoice = await _context.Invoices
-            .FirstOrDefaultAsync(i => i.PaymentReference == paymentReference)
-            ?? throw new KeyNotFoundException($"Invoice with reference {paymentReference} not found.");
+            .FirstOrDefaultAsync(i => i.Id == payment.InvoiceId)
+            ?? throw new KeyNotFoundException($"Invoice {payment.InvoiceId} not found.");
 
-        invoice.Status = Enum.Parse<InvoiceStatus>(status, ignoreCase: true);
-
-        if (invoice.Status == InvoiceStatus.Paid)
+        if (parsedStatus == PaymentStatus.Successful)
         {
+            invoice.Status = InvoiceStatus.Paid;
             invoice.PaidAt = DateTime.UtcNow;
 
             var subscription = await _context.Subscriptions
