@@ -2,6 +2,8 @@
 using Microsoft.Extensions.DependencyInjection;
 using Pulse.Billing.DataAccess;
 using Pulse.Billing.Interfaces;
+using Pulse.Billing.Payments;
+using Pulse.Billing.Payments.Paystack;
 using Pulse.Billing.Services;
 using Pulse.Shared.Interfaces;
 
@@ -20,6 +22,7 @@ public static class DependencyInjection
         services.AddScoped<IBillingService, BillingService>();
         services.AddScoped<IBillingValidator, BillingService>();
         services.AddScoped<ISubscriptionCreator, BillingService>();
+        services.AddHttpClient<IPaymentProvider, PaystackPaymentProvider>();
 
         return services;
     }
