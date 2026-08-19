@@ -7,6 +7,7 @@ using Pulse.Billing.Queries;
 using Pulse.Shared.Results;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using System.Text.Json;
 
 namespace Pulse.Api.Endpoints;
 
@@ -141,12 +142,23 @@ public static class BillingEndpoints
         .WithOpenApi()
         .RequireAuthorization();
 
-        group.MapPost("/webhooks/payment", async (PaystackWebhookPayload payload, IMediator mediator) =>
+        group.MapPost("/webhooks/payment", async (HttpRequest request, IMediator mediator) =>
         {
-            if (payload.Event == "charge.success")
+            request.EnableBuffering();
+            using var reader = new StreamReader(request.Body, leaveOpen: true);
+            var rawBody = await reader.ReadToEndAsync();
+            request.Body.Position = 0;
+
+            var payload = JsonSerializer.Deserialize<PaystackWebhookPayload>(rawBody, new JsonSerializerOptions
+            {
+                PropertyNameCaseInsensitive = true
+            });
+
+            if (payload?.Event == "charge.success")
             {
                 await mediator.Send(new ProcessPaymentResultCommand(payload.Data.Reference, payload.Data.Status));
             }
+
             return Results.NoContent();
         })
         .WithName("SyncPaymentWebhook")
