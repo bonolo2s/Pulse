@@ -138,4 +138,44 @@ public class BillingService : IBillingService, IBillingValidator, ISubscriptionC
         if (currentEndpointCount >= subscription.EndpointLimit)
             throw new InvalidOperationException($"Endpoint limit of {subscription.EndpointLimit} reached. Go Pro for unlimited monitoring.");
     }
+
+    public async Task<Invoice> CreatePendingInvoiceAsync(Guid userId, Guid subscriptionId, decimal amount, string currency)
+    {
+        var invoice = new Invoice
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            SubscriptionId = subscriptionId,
+            Amount = amount,
+            Currency = currency,
+            Status = InvoiceStatus.Pending,
+            IssuedAt = DateTime.UtcNow
+        };
+
+        _context.Invoices.Add(invoice);
+        await _context.SaveChangesAsync();
+
+        return invoice;
+    }
+
+    public async Task<Payment> CreatePendingPaymentAsync(Guid userId, Guid invoiceId, decimal amount, string providerReference)
+    {
+        var payment = new Payment
+        {
+            Id = Guid.NewGuid(),
+            UserId = userId,
+            InvoiceId = invoiceId,
+            Amount = amount,
+            Status = PaymentStatus.Pending,
+            //Method = PaymentMethodType.Card,
+            Provider = "Paystack",
+            ProviderReference = providerReference,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.Payments.Add(payment);
+        await _context.SaveChangesAsync();
+
+        return payment;
+    }
 }
