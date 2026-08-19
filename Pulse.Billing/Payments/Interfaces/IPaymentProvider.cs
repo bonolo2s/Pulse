@@ -1,6 +1,6 @@
 ﻿using Pulse.Billing.Payments.Paystack.DTOs;
 
-namespace Pulse.Billing.Payments;
+namespace Pulse.Billing.Payments.Interfaces;
 
 public interface IPaymentProvider
 {

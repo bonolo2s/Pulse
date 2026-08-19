@@ -4,7 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Pulse.Billing.Commands;
 using Pulse.Billing.DataAccess;
 using Pulse.Billing.Interfaces;
-using Pulse.Billing.Payments;
+using Pulse.Billing.Payments.Interfaces;
 using Pulse.Billing.Payments.Paystack.DTOs;
 
 namespace Pulse.Billing.Handlers;

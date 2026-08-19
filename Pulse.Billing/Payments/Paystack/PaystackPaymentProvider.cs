@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Pulse.Billing.Payments.Interfaces;
 using Pulse.Billing.Payments.Paystack.DTOs;
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
