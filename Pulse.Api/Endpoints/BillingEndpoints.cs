@@ -126,8 +126,8 @@ public static class BillingEndpoints
 
         group.MapPost("/checkout", async (ClaimsPrincipal user, IMediator mediator) =>
         {
-            var userId = Guid.Parse(user.FindFirstValue(JwtRegisteredClaimNames.Sub)!);
-            var email = user.FindFirstValue(JwtRegisteredClaimNames.Email)!;
+            var userId = Guid.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!);
+            var email = user.FindFirstValue(ClaimTypes.Email)!;
 
             var result = await mediator.Send(new InitiateCheckoutCommand(userId, email));
             return Results.Ok(ApiResponse<InitializeTransactionResult>.Success(result, "Checkout initiated successfully."));
@@ -143,7 +143,7 @@ public static class BillingEndpoints
 
         group.MapPost("/webhooks/payment", async (SyncPaymentWebhookRequest request, IMediator mediator) => //webhook triggered
         {
-            await mediator.Send(new SyncPaymentWebhookCommand(request.PaymentReference, request.Status));
+            await mediator.Send(new ProcessPaymentResultCommand(request.PaymentReference, request.Status));
             return Results.NoContent();
         })
         .WithName("SyncPaymentWebhook")

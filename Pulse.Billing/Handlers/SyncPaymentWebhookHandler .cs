@@ -4,7 +4,7 @@ using Pulse.Billing.Interfaces;
 
 namespace Pulse.Billing.Handlers;
 
-public class SyncPaymentWebhookHandler : IRequestHandler<SyncPaymentWebhookCommand>
+public class SyncPaymentWebhookHandler : IRequestHandler<ProcessPaymentResultCommand>
 {
     private readonly IBillingService _billingService;
 
@@ -13,8 +13,8 @@ public class SyncPaymentWebhookHandler : IRequestHandler<SyncPaymentWebhookComma
         _billingService = billingService;
     }
 
-    public async Task Handle(SyncPaymentWebhookCommand request, CancellationToken cancellationToken)
+    public async Task Handle(ProcessPaymentResultCommand request, CancellationToken cancellationToken)
     {
-        await _billingService.SyncPaymentWebhookAsync(request.PaymentReference, request.Status);
+        await _billingService.ProcessPaymentResultAsync(request.PaymentReference, request.Status);
     }
 }
