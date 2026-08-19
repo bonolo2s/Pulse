@@ -2,6 +2,7 @@
 using Pulse.Billing.Commands;
 using Pulse.Billing.DTOs;
 using Pulse.Billing.Entities;
+using Pulse.Billing.Payments.Paystack;
 using Pulse.Billing.Payments.Paystack.DTOs;
 using Pulse.Billing.Queries;
 using Pulse.Shared.Results;
@@ -142,12 +143,23 @@ public static class BillingEndpoints
         .WithOpenApi()
         .RequireAuthorization();
 
-        group.MapPost("/webhooks/payment", async (HttpRequest request, IMediator mediator) =>
+        group.MapPost("/webhooks/payment", async (HttpRequest request, IMediator mediator, IConfiguration configuration) =>
         {
             request.EnableBuffering();
             using var reader = new StreamReader(request.Body, leaveOpen: true);
             var rawBody = await reader.ReadToEndAsync();
             request.Body.Position = 0;
+
+            var remoteIp = request.HttpContext.Connection.RemoteIpAddress?.ToString();
+            var signatureHeader = request.Headers["x-paystack-signature"].FirstOrDefault();
+            var secretKey = configuration["Paystack:SecretKey"]!;
+
+            var ipOk = PaystackWebhookValidator.IsIpWhitelisted(remoteIp);
+            var signatureOk = PaystackWebhookValidator.IsSignatureValid(rawBody, signatureHeader, secretKey);
+
+            if (!ipOk && !signatureOk)
+                return Results.Unauthorized();
+            //theres a silennt bug...on BE doesnt upfare but UI says success
 
             var payload = JsonSerializer.Deserialize<PaystackWebhookPayload>(rawBody, new JsonSerializerOptions
             {
