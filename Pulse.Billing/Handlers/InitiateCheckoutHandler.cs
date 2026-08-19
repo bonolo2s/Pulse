@@ -3,8 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Pulse.Billing.Commands;
 using Pulse.Billing.DataAccess;
-using Pulse.Billing.Entities;
-using Pulse.Billing.Enums;
+using Pulse.Billing.Interfaces;
 using Pulse.Billing.Payments;
 using Pulse.Billing.Payments.Paystack.DTOs;
 
@@ -13,12 +12,14 @@ namespace Pulse.Billing.Handlers;
 public class InitiateCheckoutHandler : IRequestHandler<InitiateCheckoutCommand, InitializeTransactionResult>
 {
     private readonly IPaymentProvider _paymentProvider;
+    private readonly IBillingService _billingService;
     private readonly BillingDbContext _context;
     private readonly IConfiguration _configuration;
 
-    public InitiateCheckoutHandler(IPaymentProvider paymentProvider, BillingDbContext context, IConfiguration configuration)
+    public InitiateCheckoutHandler(IPaymentProvider paymentProvider, IBillingService billingService, BillingDbContext context, IConfiguration configuration)
     {
         _paymentProvider = paymentProvider;
+        _billingService = billingService;
         _context = context;
         _configuration = configuration;
     }
@@ -31,43 +32,19 @@ public class InitiateCheckoutHandler : IRequestHandler<InitiateCheckoutCommand, 
 
         var amount = _configuration.GetValue<decimal>("Paystack:Plans:Pro");
         var callbackUrl = _configuration["Paystack:CallbackUrl"]!;
+        const string currency = "ZAR";
 
         var paystackRequest = new InitializeTransactionRequest(
             request.Email,
             amount,
-            "ZAR",
+            currency,
             callbackUrl
         );
 
         var result = await _paymentProvider.InitializeTransaction(paystackRequest);
 
-        var invoice = new Invoice
-        {
-            Id = Guid.NewGuid(),
-            UserId = request.UserId,
-            SubscriptionId = subscription.Id,
-            Amount = amount,
-            Currency = "ZAR",
-            Status = InvoiceStatus.Pending,
-            IssuedAt = DateTime.UtcNow
-        };
-        _context.Invoices.Add(invoice);
-
-        var payment = new Payment
-        {
-            Id = Guid.NewGuid(),
-            UserId = request.UserId,
-            InvoiceId = invoice.Id,
-            Amount = amount,
-            Status = PaymentStatus.Pending,
-            Method = PaymentMethodType.Card,
-            Provider = "Paystack",
-            ProviderReference = result.Reference,
-            CreatedAt = DateTime.UtcNow
-        };
-        _context.Payments.Add(payment);
-
-        await _context.SaveChangesAsync(cancellationToken);
+        var invoice = await _billingService.CreatePendingInvoiceAsync(request.UserId, subscription.Id, amount, currency);
+        await _billingService.CreatePendingPaymentAsync(request.UserId, invoice.Id, amount, result.Reference);
 
         return result;
     }
