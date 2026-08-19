@@ -11,6 +11,8 @@ public interface IBillingService
     Task<Subscription> GetSubscriptionAsync(Guid userId);
     Task<IEnumerable<Invoice>> GetBillingHistoryAsync(Guid userId);
     Task ProcessPaymentResultAsync(string paymentReference, string status);
+    Task<Invoice> CreatePendingInvoiceAsync(Guid userId, Guid subscriptionId, decimal amount, string currency);
+    Task<Payment> CreatePendingPaymentAsync(Guid userId, Guid invoiceId, decimal amount, string providerReference);
 }
 
 //RenewSubscriptionAsync — handles the recurring charge webhook event (Paystack subscription.create/charge.success on renewal), extends ExpiresAt again

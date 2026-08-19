@@ -9,7 +9,6 @@
   <ItemGroup>
     <Folder Include="DataAccess\" />
     <Folder Include="Interfaces\" />
-    <Folder Include="Commands\" />
     <Folder Include="Queries\" />
     <Folder Include="Services\" />
   </ItemGroup>
