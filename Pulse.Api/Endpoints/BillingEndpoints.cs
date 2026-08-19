@@ -141,9 +141,12 @@ public static class BillingEndpoints
         .WithOpenApi()
         .RequireAuthorization();
 
-        group.MapPost("/webhooks/payment", async (SyncPaymentWebhookRequest request, IMediator mediator) => //webhook triggered
+        group.MapPost("/webhooks/payment", async (PaystackWebhookPayload payload, IMediator mediator) =>
         {
-            await mediator.Send(new ProcessPaymentResultCommand(request.PaymentReference, request.Status));
+            if (payload.Event == "charge.success")
+            {
+                await mediator.Send(new ProcessPaymentResultCommand(payload.Data.Reference, payload.Data.Status));
+            }
             return Results.NoContent();
         })
         .WithName("SyncPaymentWebhook")
