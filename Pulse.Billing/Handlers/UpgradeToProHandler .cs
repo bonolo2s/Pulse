@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Pulse.Billing.Commands;
+using Pulse.Billing.Entities;
 using Pulse.Billing.Interfaces;
 
 namespace Pulse.Billing.Handlers;

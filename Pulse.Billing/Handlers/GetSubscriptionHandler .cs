@@ -1,4 +1,5 @@
 ﻿using MediatR;
+using Pulse.Billing.Entities;
 using Pulse.Billing.Interfaces;
 using Pulse.Billing.Queries;
 

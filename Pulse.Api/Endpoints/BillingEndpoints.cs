@@ -111,7 +111,6 @@ public static class BillingEndpoints
                 Amount = i.Amount,
                 Currency = i.Currency,
                 Status = i.Status,
-                PaymentReference = i.PaymentReference,
                 IssuedAt = i.IssuedAt,
                 PaidAt = i.PaidAt
             }), "Billing history retrieved successfully."));

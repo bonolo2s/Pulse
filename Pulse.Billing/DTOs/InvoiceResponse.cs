@@ -10,7 +10,6 @@ public class InvoiceResponse
     public decimal Amount { get; set; }
     public string Currency { get; set; } = string.Empty;
     public InvoiceStatus Status { get; set; }
-    public string? PaymentReference { get; set; }
     public DateTime IssuedAt { get; set; }
     public DateTime? PaidAt { get; set; }
 }
