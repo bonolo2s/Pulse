@@ -2,8 +2,11 @@
 using Pulse.Billing.Commands;
 using Pulse.Billing.DTOs;
 using Pulse.Billing.Entities;
+using Pulse.Billing.Payments.Paystack.DTOs;
 using Pulse.Billing.Queries;
 using Pulse.Shared.Results;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 
 namespace Pulse.Api.Endpoints;
 
@@ -118,6 +121,23 @@ public static class BillingEndpoints
         .Produces<ApiResponse<object>>(404)
         .Produces<ApiResponse<object>>(500)
         .WithName("GetBillingHistory")
+        .WithTags("Billing")
+        .WithOpenApi()
+        .RequireAuthorization();
+
+        group.MapPost("/checkout", async (ClaimsPrincipal user, IMediator mediator) =>
+        {
+            var userId = Guid.Parse(user.FindFirstValue(JwtRegisteredClaimNames.Sub)!);
+            var email = user.FindFirstValue(JwtRegisteredClaimNames.Email)!;
+
+            var result = await mediator.Send(new InitiateCheckoutCommand(userId, email));
+            return Results.Ok(ApiResponse<InitializeTransactionResult>.Success(result, "Checkout initiated successfully."));
+        })
+        .Produces<ApiResponse<InitializeTransactionResult>>(200)
+        .Produces<ApiResponse<object>>(401)
+        .Produces<ApiResponse<object>>(404)
+        .Produces<ApiResponse<object>>(500)
+        .WithName("InitiateCheckout")
         .WithTags("Billing")
         .WithOpenApi()
         .RequireAuthorization();
