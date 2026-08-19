@@ -102,8 +102,13 @@ public class BillingService : IBillingService, IBillingValidator, ISubscriptionC
 
         // TODO: idempotency check — look up BillingEvent by PaystackEventId, skip if already Processed
 
-        if (!Enum.TryParse<PaymentStatus>(status, ignoreCase: true, out var parsedStatus))
-            throw new InvalidOperationException($"Unrecognized payment status: {status}");
+        var parsedStatus = status.ToLowerInvariant() switch
+        {
+            "success" => PaymentStatus.Successful,
+            "failed" => PaymentStatus.Failed,
+            "pending" or "processing" => PaymentStatus.Processing,
+            _ => throw new InvalidOperationException($"Unrecognized payment status: {status}")
+        };
 
         payment.Status = parsedStatus;
         payment.CompletedAt = DateTime.UtcNow;
