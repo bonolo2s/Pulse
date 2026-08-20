@@ -8,6 +8,7 @@ public class BillingEvent
     public Payment? Payment { get; init; }
     public string? PaystackEventId { get; init; } = string.Empty; // unique EventId from paystack
     public BillingEventType EventType { get; init; }//
+    public BillingEventSource Source { get; init; }
 
     public string? Payload { get; init; } = string.Empty; // raw JSON, dont ever mod this
     public string? PreviousStatus { get; init; }
