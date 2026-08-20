@@ -44,15 +44,22 @@ public class BillingDbContext : DbContext
         modelBuilder.Entity<BillingEvent>(entity =>
         {
             entity.HasKey(e => e.Id);
-            entity.Property(e => e.PaystackEventId).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.PaystackEventId).HasMaxLength(100);
             entity.Property(e => e.EventType)
                 .IsRequired()
                 .HasConversion<string>()
                 .HasMaxLength(30);
-            entity.Property(e => e.Payload).IsRequired();
+            entity.Property(e => e.Payload);
+            entity.Property(e => e.PreviousStatus).HasMaxLength(30);
+            entity.Property(e => e.NewStatus).HasMaxLength(30);
             entity.Property(e => e.Processed).IsRequired();
             entity.Property(e => e.ReceivedAt).IsRequired();
             entity.HasIndex(e => e.PaystackEventId).IsUnique();
+
+            entity.HasOne(e => e.Payment)
+                .WithMany()
+                .HasForeignKey(e => e.PaymentId)
+                .OnDelete(DeleteBehavior.SetNull);
         });
 
         modelBuilder.Entity<Payment>(entity =>
