@@ -15,5 +15,5 @@ public class BillingEvent
     public string? NewStatus { get; init; }
     public DateTime ReceivedAt { get; init; }
     public DateTime? ProcessedAt { get; set; }
-    public bool Processed { get; set; }
+    public bool? Processed { get; set; } // null = not applicable (log-only event), false = pending, true = done
 }
