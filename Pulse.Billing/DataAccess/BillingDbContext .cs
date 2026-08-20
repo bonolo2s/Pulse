@@ -24,7 +24,7 @@ public class BillingDbContext : DbContext
                 .IsRequired()
                 .HasConversion<string>()
                 .HasMaxLength(20);
-            entity.Property(e => e.EndpointLimit).IsRequired();
+            //entity.Property(e => e.EndpointLimit).IsRequired();
             entity.Property(e => e.StartedAt).IsRequired();
             entity.Property(e => e.IsActive).IsRequired();
             entity.HasIndex(e => e.UserId);
