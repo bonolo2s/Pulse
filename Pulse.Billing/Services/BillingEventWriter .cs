@@ -48,4 +48,14 @@ public class BillingEventWriter : IBillingEventWriter
         return await _context.BillingEvents
             .AnyAsync(e => e.PaystackEventId == paystackEventId);
     }
+    private static bool RequiresProcessing(BillingEventType eventType) => eventType switch
+    {
+        BillingEventType.PaymentSuccessful => true,
+        BillingEventType.PaymentFailed => true,
+        BillingEventType.ChargeSuccess => true,
+        BillingEventType.ChargeFailed => true,
+        BillingEventType.SubscriptionEnable => true,
+        BillingEventType.SubscriptionDisable => true,
+        _ => false
+    };
 }
