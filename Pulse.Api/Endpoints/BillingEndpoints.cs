@@ -2,6 +2,7 @@
 using Pulse.Billing.Commands;
 using Pulse.Billing.DTOs;
 using Pulse.Billing.Entities;
+using Pulse.Billing.Interfaces;
 using Pulse.Billing.Payments.Paystack;
 using Pulse.Billing.Payments.Paystack.DTOs;
 using Pulse.Billing.Queries;
@@ -143,7 +144,7 @@ public static class BillingEndpoints
         .WithOpenApi()
         .RequireAuthorization();
 
-        group.MapPost("/webhooks/payment", async (HttpRequest request, IMediator mediator, IConfiguration configuration) =>
+        group.MapPost("/webhooks/payment", async (HttpRequest request, IMediator mediator, IConfiguration configuration, IBillingEventWriter eventWriter) =>
         {
             request.EnableBuffering();
             using var reader = new StreamReader(request.Body, leaveOpen: true);
@@ -158,8 +159,21 @@ public static class BillingEndpoints
             var signatureOk = PaystackWebhookValidator.IsSignatureValid(rawBody, signatureHeader, secretKey);
 
             if (!ipOk && !signatureOk)
+            {
+                await eventWriter.LogEventAsync(
+                    eventType: BillingEventType.WebhookRejected,
+                    source: BillingEventSource.Webhook,
+                    paymentId: null,
+                    userId: null,
+                    paystackEventId: null,
+                    payload: rawBody,
+                    previousStatus: null,
+                    newStatus: null);
+
                 return Results.Unauthorized();
-            //theres a silennt bug...on BE doesnt upfare but UI says success
+                //theres a silennt bug...on BE doesnt upfare but UI says success
+            }
+
 
             var payload = JsonSerializer.Deserialize<PaystackWebhookPayload>(rawBody, new JsonSerializerOptions
             {
