@@ -17,7 +17,8 @@ namespace Pulse.Billing.Interfaces
             string? paystackEventId,
             string? payload,
             string? previousStatus,
-            string? newStatus);
+            string? newStatus,
+            bool? processed = null);
 
         Task<bool> HasProcessedEventAsync(string paystackEventId);
     }

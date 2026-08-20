@@ -22,7 +22,8 @@ public class BillingEventWriter : IBillingEventWriter
         string? paystackEventId,
         string? payload,
         string? previousStatus,
-        string? newStatus)
+        string? newStatus,
+        bool? processed = null)
     {
         var billingEvent = new BillingEvent
         {
