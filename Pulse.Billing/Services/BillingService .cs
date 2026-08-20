@@ -10,10 +10,12 @@ namespace Pulse.Billing.Services;
 public class BillingService : IBillingService, IBillingValidator, ISubscriptionCreator
 {
     private readonly BillingDbContext _context;
+    private readonly IBillingEventWriter _eventWriter;
 
-    public BillingService(BillingDbContext context)
+    public BillingService(BillingDbContext context, IBillingEventWriter eventWriter)
     {
         _context = context;
+        _eventWriter = eventWriter;
     }
 
     public async Task<Subscription> CreateSubscriptionAsync(Subscription subscription) // Not a conflict .Admin might need it 
@@ -96,6 +98,21 @@ public class BillingService : IBillingService, IBillingValidator, ISubscriptionC
 
     public async Task ProcessPaymentResultAsync(string paymentReference, string status) //**
     {
+        var alreadyProcessed = await _eventWriter.HasProcessedEventAsync(paymentReference);
+        if (alreadyProcessed)
+        {
+            await _eventWriter.LogEventAsync(
+                eventType: BillingEventType.DuplicateEventReceived,
+                source: BillingEventSource.Webhook,
+                paymentId: null,
+                userId: null,
+                paystackEventId: paymentReference,
+                payload: null,
+                previousStatus: null,
+                newStatus: null);
+            return;
+        }
+
         var payment = await _context.Payments
             .FirstOrDefaultAsync(p => p.ProviderReference == paymentReference)
             ?? throw new KeyNotFoundException($"Payment with reference {paymentReference} not found.");
@@ -109,6 +126,8 @@ public class BillingService : IBillingService, IBillingValidator, ISubscriptionC
             "pending" or "processing" => PaymentStatus.Processing,
             _ => throw new InvalidOperationException($"Unrecognized payment status: {status}")
         };
+
+        var previousStatus = payment.Status.ToString();
 
         payment.Status = parsedStatus;
         payment.CompletedAt = DateTime.UtcNow;
@@ -132,6 +151,16 @@ public class BillingService : IBillingService, IBillingValidator, ISubscriptionC
         }
 
         await _context.SaveChangesAsync();
+
+        await _eventWriter.LogEventAsync(
+            eventType: parsedStatus == PaymentStatus.Successful ? BillingEventType.PaymentSuccessful : BillingEventType.PaymentFailed,
+            source: BillingEventSource.Webhook,
+            paymentId: payment.Id,
+            userId: payment.UserId,
+            paystackEventId: paymentReference,
+            payload: null,
+            previousStatus: previousStatus,
+            newStatus: parsedStatus.ToString());
     }
 
     public async Task ValidateEndpointLimitAsync(Guid userId, int currentEndpointCount)
