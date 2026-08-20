@@ -10,7 +10,7 @@
     {
         public long Id { get; set; }
         public string Status { get; set; } = string.Empty;
-        public string Reference { get; set; } = string.Empty;
+        public string Reference { get; set; } = string.Empty;//from chcekout in
         public int Amount { get; set; }
         public string Currency { get; set; } = string.Empty;
         public string? Channel { get; set; }

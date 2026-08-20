@@ -22,7 +22,6 @@ public class BillingService : IBillingService, IBillingValidator, ISubscriptionC
     {
         subscription.Id = Guid.NewGuid();
         subscription.Plan = SubscriptionPlan.Free;
-        subscription.EndpointLimit = 3;
         subscription.StartedAt = DateTime.UtcNow;
         subscription.IsActive = true;
 
@@ -38,7 +37,6 @@ public class BillingService : IBillingService, IBillingValidator, ISubscriptionC
             Id = Guid.NewGuid(),
             UserId = userId,
             Plan = SubscriptionPlan.Free,
-            EndpointLimit = 3,
             StartedAt = DateTime.UtcNow,
             IsActive = true
         };
@@ -57,7 +55,6 @@ public class BillingService : IBillingService, IBillingValidator, ISubscriptionC
         // TODO: add fault tolerance here — retry on transient DB failure before returning success to caller.
 
         subscription.Plan = SubscriptionPlan.Pro;
-        subscription.EndpointLimit = int.MaxValue;
         subscription.StartedAt = DateTime.UtcNow;
         subscription.ExpiresAt = DateTime.UtcNow.AddMonths(1);
 
@@ -146,7 +143,6 @@ public class BillingService : IBillingService, IBillingValidator, ISubscriptionC
                 ?? throw new KeyNotFoundException($"Subscription {invoice.SubscriptionId} not found.");
 
             subscription.Plan = SubscriptionPlan.Pro;
-            subscription.EndpointLimit = int.MaxValue;
             subscription.ExpiresAt = DateTime.UtcNow.AddMonths(1);
         }
 
