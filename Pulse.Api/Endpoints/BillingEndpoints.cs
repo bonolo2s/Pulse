@@ -182,7 +182,7 @@ public static class BillingEndpoints
 
             if (payload?.Event == "charge.success")
             {
-                await mediator.Send(new ProcessPaymentResultCommand(payload.Data.Reference, payload.Data.Status));
+                await mediator.Send(new ProcessPaymentResultCommand(payload.Data.Reference, payload.Data.Status, payload.Data.Channel, payload.Data.Authorization));
             }
 
             return Results.NoContent();
