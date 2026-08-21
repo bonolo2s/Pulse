@@ -190,5 +190,53 @@ public static class BillingEndpoints
         .WithName("SyncPaymentWebhook")
         .WithTags("Billing")
         .WithOpenApi();
+
+        group.MapGet("/get-payment-methods/{userId:guid}", async (Guid userId, IMediator mediator) =>
+        {
+            var results = await mediator.Send(new GetPaymentMethodsQuery(userId));
+            return Results.Ok(ApiResponse<IEnumerable<PaymentMethodResponse>>.Success(results.Select(pm => new PaymentMethodResponse
+            {
+                Id = pm.Id,
+                Type = pm.Type,
+                Brand = pm.Brand,
+                Last4 = pm.Last4,
+                ExpiryMonth = pm.ExpiryMonth,
+                ExpiryYear = pm.ExpiryYear,
+                BankName = pm.BankName,
+                IsDefault = pm.IsDefault
+            }), "Payment methods retrieved successfully."));
+        })
+        .Produces<ApiResponse<IEnumerable<PaymentMethodResponse>>>(200)
+        .Produces<ApiResponse<object>>(401)
+        .WithName("GetPaymentMethods")
+        .WithTags("Billing")
+        .WithOpenApi()
+        .RequireAuthorization();
+
+        group.MapDelete("/payment-methods/{id:guid}", async (Guid id, IMediator mediator) =>
+        {
+            await mediator.Send(new DeletePaymentMethodCommand(id));
+            return Results.Ok(ApiResponse<object>.Success(null, "Payment method removed."));
+        })
+        .Produces<ApiResponse<object>>(200)
+        .Produces<ApiResponse<object>>(401)
+        .Produces<ApiResponse<object>>(404)
+        .WithName("DeletePaymentMethod")
+        .WithTags("Billing")
+        .WithOpenApi()
+        .RequireAuthorization();
+
+        group.MapPut("/payment-methods/{id:guid}/set-default", async (Guid id, IMediator mediator) =>
+        {
+            await mediator.Send(new SetDefaultPaymentMethodCommand(id));
+            return Results.Ok(ApiResponse<object>.Success(null, "Default payment method updated."));
+        })
+        .Produces<ApiResponse<object>>(200)
+        .Produces<ApiResponse<object>>(401)
+        .Produces<ApiResponse<object>>(404)
+        .WithName("SetDefaultPaymentMethod")
+        .WithTags("Billing")
+        .WithOpenApi()
+        .RequireAuthorization();
     }
 }
