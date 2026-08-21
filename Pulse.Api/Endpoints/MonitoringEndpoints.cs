@@ -150,5 +150,18 @@ public static class MonitoringEndpoints
         .WithTags("Monitoring")
         .WithOpenApi()
         .RequireAuthorization();
+
+        group.MapGet("/get-endpoint-count/{userId:guid}", async (Guid userId, IMediator mediator) =>
+        {
+            var count = await mediator.Send(new GetEndpointCountQuery(userId));
+            return Results.Ok(ApiResponse<int>.Success(count, "Endpoint count retrieved successfully."));
+        })
+        .Produces<ApiResponse<int>>(200)
+        .Produces<ApiResponse<object>>(401)
+        .Produces<ApiResponse<object>>(500)
+        .WithName("GetEndpointCount")
+        .WithTags("Monitoring")
+        .WithOpenApi()
+        .RequireAuthorization();
     }
 }
