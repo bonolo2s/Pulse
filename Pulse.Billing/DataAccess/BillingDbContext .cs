@@ -15,6 +15,8 @@ public class BillingDbContext : DbContext
 
     public DbSet<Payment> Payments { get; set; } = null!;
 
+    public DbSet<PaymentMethod> PaymentMethods { get; set; } = null!;
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Subscription>(entity =>
@@ -70,6 +72,25 @@ public class BillingDbContext : DbContext
             entity.Property(e => e.Method).IsRequired().HasConversion<string>();
             entity.Property(e => e.Provider).IsRequired().HasMaxLength(50);
             entity.Property(e => e.CreatedAt).IsRequired();
+        });
+
+        modelBuilder.Entity<PaymentMethod>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Type)
+                .IsRequired()
+                .HasConversion<string>()
+                .HasMaxLength(20);
+            entity.Property(e => e.Brand)
+                .HasConversion<string>()
+                .HasMaxLength(20);
+            entity.Property(e => e.Last4).HasMaxLength(4);
+            entity.Property(e => e.BankName).HasMaxLength(100);
+            entity.Property(e => e.AuthorizationCode).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.IsDefault).IsRequired();
+            entity.Property(e => e.CreatedAt).IsRequired();
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => e.AuthorizationCode).IsUnique();
         });
     }
 }
