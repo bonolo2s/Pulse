@@ -72,30 +72,30 @@ public class BillingService : IBillingService, IBillingValidator
 
             subscription.Plan = SubscriptionPlan.Pro;
             subscription.ExpiresAt = DateTime.UtcNow.AddMonths(1);
-        }
 
-        if (authorization != null && authorization.Reusable)
-        {
-            var paymentMethod = new PaymentMethod
+            if (authorization != null && authorization.Reusable)
             {
-                UserId = payment.UserId,
-                Type = channel == "card" ? PaymentMethodType.Card : PaymentMethodType.Eft,
-                AuthorizationCode = authorization.AuthorizationCode
-            };
+                var paymentMethod = new PaymentMethod
+                {
+                    UserId = payment.UserId,
+                    Type = channel == "card" ? PaymentMethodType.Card : PaymentMethodType.Eft,
+                    AuthorizationCode = authorization.AuthorizationCode
+                };
 
-            if (channel == "card")
-            {
-                paymentMethod.Brand = Enum.TryParse<CardBrand>(authorization.CardType, true, out var brand) ? brand : null;
-                paymentMethod.Last4 = authorization.Last4;
-                paymentMethod.ExpiryMonth = int.TryParse(authorization.ExpMonth, out var m) ? m : null;
-                paymentMethod.ExpiryYear = int.TryParse(authorization.ExpYear, out var y) ? y : null;
+                if (channel == "card")
+                {
+                    paymentMethod.Brand = Enum.TryParse<CardBrand>(authorization.CardType, true, out var brand) ? brand : null;
+                    paymentMethod.Last4 = authorization.Last4;
+                    paymentMethod.ExpiryMonth = int.TryParse(authorization.ExpMonth, out var m) ? m : null;
+                    paymentMethod.ExpiryYear = int.TryParse(authorization.ExpYear, out var y) ? y : null;
+                }
+                else
+                {
+                    paymentMethod.BankName = authorization.Bank;
+                }
+
+                await _paymentMethodService.SavePaymentMethodAsync(paymentMethod);
             }
-            else
-            {
-                paymentMethod.BankName = authorization.Bank;
-            }
-
-            await _paymentMethodService.SavePaymentMethodAsync(paymentMethod);
         }
 
         await _context.SaveChangesAsync();
