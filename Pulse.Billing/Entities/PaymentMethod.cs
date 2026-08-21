@@ -17,7 +17,7 @@ public class PaymentMethod
     // EFT-specific — null when Type == Card
     public string? BankName { get; set; }
 
-    public string AuthorizationCode { get; set; } = string.Empty; // token ref for auto sub reuse
+    public string AuthorizationCode { get; set; } = string.Empty; // token reference for reusing the card without user entering again.
     public bool IsDefault { get; set; }
     public DateTime CreatedAt { get; set; }
 }
