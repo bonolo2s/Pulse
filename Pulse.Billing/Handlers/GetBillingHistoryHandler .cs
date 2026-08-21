@@ -7,15 +7,15 @@ namespace Pulse.Billing.Handlers;
 
 public class GetBillingHistoryHandler : IRequestHandler<GetBillingHistoryQuery, IEnumerable<Invoice>>
 {
-    private readonly IBillingService _billingService;
+    private readonly IInvoiceService _invoiceService;
 
-    public GetBillingHistoryHandler(IBillingService billingService)
+    public GetBillingHistoryHandler(IInvoiceService invoiceService)
     {
-        _billingService = billingService;
+        _invoiceService = invoiceService;
     }
 
     public async Task<IEnumerable<Invoice>> Handle(GetBillingHistoryQuery request, CancellationToken cancellationToken)
     {
-        return await _billingService.GetBillingHistoryAsync(request.UserId);
+        return await _invoiceService.GetBillingHistoryAsync(request.UserId);
     }
 }

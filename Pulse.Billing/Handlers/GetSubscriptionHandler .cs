@@ -7,15 +7,15 @@ namespace Pulse.Billing.Handlers;
 
 public class GetSubscriptionHandler : IRequestHandler<GetSubscriptionQuery, Subscription>
 {
-    private readonly IBillingService _billingService;
+    private readonly ISubscriptionService _subscriptionService;
 
-    public GetSubscriptionHandler(IBillingService billingService)
+    public GetSubscriptionHandler(ISubscriptionService subscriptionService)
     {
-        _billingService = billingService;
+        _subscriptionService = subscriptionService;
     }
 
     public async Task<Subscription> Handle(GetSubscriptionQuery request, CancellationToken cancellationToken)
     {
-        return await _billingService.GetSubscriptionAsync(request.UserId);
+        return await _subscriptionService.GetSubscriptionAsync(request.UserId);
     }
 }

@@ -6,15 +6,15 @@ namespace Pulse.Billing.Handlers;
 
 public class CancelSubscriptionHandler : IRequestHandler<CancelSubscriptionCommand>
 {
-    private readonly IBillingService _billingService;
+    private readonly ISubscriptionService _subscriptionService;
 
-    public CancelSubscriptionHandler(IBillingService billingService)
+    public CancelSubscriptionHandler(ISubscriptionService subscriptionService)
     {
-        _billingService = billingService;
+        _subscriptionService = subscriptionService;
     }
 
     public async Task Handle(CancelSubscriptionCommand request, CancellationToken cancellationToken)
     {
-        await _billingService.CancelSubscriptionAsync(request.UserId);
+        await _subscriptionService.CancelSubscriptionAsync(request.UserId);
     }
 }

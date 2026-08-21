@@ -7,7 +7,7 @@ using Pulse.Shared.Interfaces;
 
 namespace Pulse.Billing.Services;
 
-public class BillingService : IBillingService, IBillingValidator, ISubscriptionCreator
+public class BillingService : IBillingService, IBillingValidator
 {
     private readonly BillingDbContext _context;
     private readonly IBillingEventWriter _eventWriter;
@@ -16,81 +16,6 @@ public class BillingService : IBillingService, IBillingValidator, ISubscriptionC
     {
         _context = context;
         _eventWriter = eventWriter;
-    }
-
-    public async Task<Subscription> CreateSubscriptionAsync(Subscription subscription) // Not a conflict .Admin might need it 
-    {
-        subscription.Id = Guid.NewGuid();
-        subscription.Plan = SubscriptionPlan.Free;
-        subscription.StartedAt = DateTime.UtcNow;
-        subscription.IsActive = true;
-
-        _context.Subscriptions.Add(subscription);
-        await _context.SaveChangesAsync();
-
-        return subscription;
-    }
-    public async Task CreateSubscriptionAsync(Guid userId) // used by auth on Register
-    {
-        var subscription = new Subscription
-        {
-            Id = Guid.NewGuid(),
-            UserId = userId,
-            Plan = SubscriptionPlan.Free,
-            StartedAt = DateTime.UtcNow,
-            IsActive = true
-        };
-
-        _context.Subscriptions.Add(subscription);
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task<Subscription> UpgradeToProAsync(Guid userId)
-    {
-        var subscription = await _context.Subscriptions
-            .FirstOrDefaultAsync(s => s.UserId == userId && s.IsActive)
-            ?? throw new KeyNotFoundException($"Subscription for user {userId} not found.");
-
-        // RESERVED: only call this after Paystack payment is confirmed (webhook or verify fallback).
-        // TODO: add fault tolerance here — retry on transient DB failure before returning success to caller.
-
-        subscription.Plan = SubscriptionPlan.Pro;
-        subscription.StartedAt = DateTime.UtcNow;
-        subscription.ExpiresAt = DateTime.UtcNow.AddMonths(1);
-
-        await _context.SaveChangesAsync();
-        return subscription;
-    }
-
-    // TODO: VerifySubscriptionUpgradeAsync — fallback path for when webhook doesn't arrive (Ghost webhook)/ after cetain time
-
-    public async Task CancelSubscriptionAsync(Guid userId)
-    {
-        var subscription = await _context.Subscriptions
-            .FirstOrDefaultAsync(s => s.UserId == userId && s.IsActive)
-            ?? throw new KeyNotFoundException($"Subscription for user {userId} not found.");
-
-        // TODO: call IPaymentProvider.DisableSubscription to stop future Paystack billing
-        // TODO: don't cut access immediately — let ExpiresAt (already paid period) run out, only flip IsActive when it lapses
-        subscription.IsActive = false;
-        subscription.ExpiresAt = DateTime.UtcNow;
-
-        await _context.SaveChangesAsync();
-    }
-
-    public async Task<Subscription> GetSubscriptionAsync(Guid userId)
-    {
-        return await _context.Subscriptions
-            .FirstOrDefaultAsync(s => s.UserId == userId && s.IsActive)
-            ?? throw new KeyNotFoundException($"Subscription for user {userId} not found.");
-    }
-
-    public async Task<IEnumerable<Invoice>> GetBillingHistoryAsync(Guid userId)
-    {
-        return await _context.Invoices
-            .Where(i => i.UserId == userId)
-            .OrderByDescending(i => i.IssuedAt)
-            .ToListAsync();
     }
 
     public async Task ProcessPaymentResultAsync(string paymentReference, string status) //**
@@ -167,25 +92,6 @@ public class BillingService : IBillingService, IBillingValidator, ISubscriptionC
 
         if (currentEndpointCount >= subscription.EndpointLimit)
             throw new InvalidOperationException($"Endpoint limit of {subscription.EndpointLimit} reached. Go Pro for unlimited monitoring.");
-    }
-
-    public async Task<Invoice> CreatePendingInvoiceAsync(Guid userId, Guid subscriptionId, decimal amount, string currency)
-    {
-        var invoice = new Invoice
-        {
-            Id = Guid.NewGuid(),
-            UserId = userId,
-            SubscriptionId = subscriptionId,
-            Amount = amount,
-            Currency = currency,
-            Status = InvoiceStatus.Pending,
-            IssuedAt = DateTime.UtcNow
-        };
-
-        _context.Invoices.Add(invoice);
-        await _context.SaveChangesAsync();
-
-        return invoice;
     }
 
     public async Task<Payment> CreatePendingPaymentAsync(Guid userId, Guid invoiceId, decimal amount, string providerReference)

@@ -21,9 +21,12 @@ public static class DependencyInjection
 
         services.AddScoped<IBillingService, BillingService>();
         services.AddScoped<IBillingValidator, BillingService>();
-        services.AddScoped<ISubscriptionCreator, BillingService>();
         services.AddHttpClient<IPaymentProvider, PaystackPaymentProvider>();
         services.AddScoped<IBillingEventWriter, BillingEventWriter>();
+        services.AddScoped<ISubscriptionService, SubscriptionService>();
+        services.AddScoped<ISubscriptionCreator, SubscriptionService>();
+        services.AddScoped<IInvoiceService, InvoiceService>();
+        services.AddScoped<IPaymentMethodService, PaymentMethodService>();
 
         return services;
     }

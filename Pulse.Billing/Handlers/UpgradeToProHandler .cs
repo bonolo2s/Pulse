@@ -7,15 +7,15 @@ namespace Pulse.Billing.Handlers;
 
 public class UpgradeToProHandler : IRequestHandler<UpgradeToProCommand, Subscription>
 {
-    private readonly IBillingService _billingService;
+    private readonly ISubscriptionService _subscriptionService;
 
-    public UpgradeToProHandler(IBillingService billingService)
+    public UpgradeToProHandler(ISubscriptionService subscriptionService)
     {
-        _billingService = billingService;
+        _subscriptionService = subscriptionService;
     }
 
     public async Task<Subscription> Handle(UpgradeToProCommand request, CancellationToken cancellationToken)
     {
-        return await _billingService.UpgradeToProAsync(request.UserId);
+        return await _subscriptionService.UpgradeToProAsync(request.UserId);
     }
 }

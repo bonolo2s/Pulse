@@ -14,18 +14,21 @@ public class InitiateCheckoutHandler : IRequestHandler<InitiateCheckoutCommand, 
 {
     private readonly IPaymentProvider _paymentProvider;
     private readonly IBillingService _billingService;
+    private readonly IInvoiceService _invoiceService;
     private readonly IBillingEventWriter _eventWriter;
     private readonly BillingDbContext _context;
     private readonly IConfiguration _configuration;
     public InitiateCheckoutHandler(
         IPaymentProvider paymentProvider,
         IBillingService billingService,
+        IInvoiceService invoiceService,
         IBillingEventWriter eventWriter,
         BillingDbContext context,
         IConfiguration configuration)
     {
         _paymentProvider = paymentProvider;
         _billingService = billingService;
+        _invoiceService = invoiceService;
         _eventWriter = eventWriter;
         _context = context;
         _configuration = configuration;
@@ -50,7 +53,7 @@ public class InitiateCheckoutHandler : IRequestHandler<InitiateCheckoutCommand, 
 
         var result = await _paymentProvider.InitializeTransaction(paystackRequest);
 
-        var invoice = await _billingService.CreatePendingInvoiceAsync(request.UserId, subscription.Id, amount, currency);
+        var invoice = await _invoiceService.CreatePendingInvoiceAsync(request.UserId, subscription.Id, amount, currency);
         var payment = await _billingService.CreatePendingPaymentAsync(request.UserId, invoice.Id, amount, result.Reference);
 
         await _eventWriter.LogEventAsync(
