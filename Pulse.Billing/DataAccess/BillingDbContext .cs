@@ -54,7 +54,7 @@ public class BillingDbContext : DbContext
             entity.Property(e => e.Payload);
             entity.Property(e => e.PreviousStatus).HasMaxLength(30);
             entity.Property(e => e.NewStatus).HasMaxLength(30);
-            entity.Property(e => e.Processed).IsRequired();
+            entity.Property(e => e.Processed);
             entity.Property(e => e.ReceivedAt).IsRequired();
             entity.HasIndex(e => e.PaystackEventId).IsUnique();
 

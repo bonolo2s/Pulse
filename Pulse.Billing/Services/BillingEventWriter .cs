@@ -49,7 +49,7 @@ public class BillingEventWriter : IBillingEventWriter
         return await _context.BillingEvents
             .AnyAsync(e => e.PaystackEventId == paystackEventId);
     }
-    private static bool RequiresProcessing(BillingEventType eventType) => eventType switch
+    private static bool RequiresProcessing(BillingEventType eventType) => eventType switch //Future background sweep for makesure disputes
     {
         BillingEventType.PaymentSuccessful => true,
         BillingEventType.PaymentFailed => true,
