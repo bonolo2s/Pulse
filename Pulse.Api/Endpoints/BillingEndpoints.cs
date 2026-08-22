@@ -29,6 +29,7 @@ public static class BillingEndpoints
                 UserId = result.UserId,
                 Plan = result.Plan,
                 EndpointLimit = result.EndpointLimit,
+                MonthlyPrice = result.MonthlyPrice,
                 StartedAt = result.StartedAt,
                 ExpiresAt = result.ExpiresAt,
                 IsActive = result.IsActive
@@ -52,6 +53,7 @@ public static class BillingEndpoints
                 UserId = result.UserId,
                 Plan = result.Plan,
                 EndpointLimit = result.EndpointLimit,
+                MonthlyPrice = result.MonthlyPrice,
                 StartedAt = result.StartedAt,
                 ExpiresAt = result.ExpiresAt,
                 IsActive = result.IsActive
@@ -89,6 +91,7 @@ public static class BillingEndpoints
                 UserId = result.UserId,
                 Plan = result.Plan,
                 EndpointLimit = result.EndpointLimit,
+                MonthlyPrice = result.MonthlyPrice,
                 StartedAt = result.StartedAt,
                 ExpiresAt = result.ExpiresAt,
                 IsActive = result.IsActive
