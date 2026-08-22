@@ -51,6 +51,10 @@ public class BillingDbContext : DbContext
                 .IsRequired()
                 .HasConversion<string>()
                 .HasMaxLength(30);
+            entity.Property(e => e.Source)
+            .IsRequired()
+            .HasConversion<string>()
+            .HasMaxLength(20);
             entity.Property(e => e.Payload);
             entity.Property(e => e.PreviousStatus).HasMaxLength(30);
             entity.Property(e => e.NewStatus).HasMaxLength(30);
