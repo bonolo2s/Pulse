@@ -25,5 +25,6 @@ public class Subscription
     public string? PaystackSubscriptionCode { get; set; } // Paystack's reference .this is one that actually Id'd my subscription from procviders side.
     public DateTime StartedAt { get; set; }//
     public DateTime? ExpiresAt { get; set; }
+    public bool CancelAtPeriodEnd { get; set; }
     public bool IsActive { get; set; }
 }
