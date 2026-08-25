@@ -1,5 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Pulse.Billing.BackgroundServices;
 using Pulse.Billing.DataAccess;
 using Pulse.Billing.Interfaces;
 using Pulse.Billing.Payments.Interfaces;
@@ -27,6 +28,8 @@ public static class DependencyInjection
         services.AddScoped<ISubscriptionCreator, SubscriptionService>();
         services.AddScoped<IInvoiceService, InvoiceService>();
         services.AddScoped<IPaymentMethodService, PaymentMethodService>();
+        services.AddScoped<ISubscriptionExpirySweepService, SubscriptionExpirySweepService>();
+        services.AddHostedService<SubscriptionExpirySweepHostedService>();
 
         return services;
     }
