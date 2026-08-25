@@ -69,10 +69,8 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
             ?? throw new KeyNotFoundException($"Subscription for user {userId} not found.");
 
         // TODO: call IPaymentProvider.DisableSubscription to stop future Paystack billing
-        // TODO: don't cut access immediately — let ExpiresAt (already paid period) run out, only flip IsActive when it lapses
-        subscription.IsActive = false;
-        subscription.ExpiresAt = DateTime.UtcNow;
 
+        subscription.CancelAtPeriodEnd = true;
         await _context.SaveChangesAsync();
     }
 
