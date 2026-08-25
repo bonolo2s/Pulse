@@ -80,4 +80,20 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
             .FirstOrDefaultAsync(s => s.UserId == userId && s.IsActive)
             ?? throw new KeyNotFoundException($"Subscription for user {userId} not found.");
     }
+
+    public async Task ProcessExpiredSubscriptionsAsync()
+    {
+        var expiredSubscriptions = await _context.Subscriptions
+            .Where(s => s.IsActive && s.CancelAtPeriodEnd && s.ExpiresAt <= DateTime.UtcNow)
+            .ToListAsync();
+
+        foreach (var subscription in expiredSubscriptions)
+        {
+            subscription.Plan = SubscriptionPlan.Free;
+            subscription.ExpiresAt = null;
+            subscription.CancelAtPeriodEnd = false;
+        }
+
+        await _context.SaveChangesAsync();
+    }
 }
