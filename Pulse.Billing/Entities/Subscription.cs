@@ -4,7 +4,7 @@ namespace Pulse.Billing.Entities;
 
 public class Subscription
 {
-    public Guid Id { get; set; }
+    public Guid Id { get; set; } //internal use by my DB
     public Guid UserId { get; set; }
     public SubscriptionPlan Plan { get; set; } // Free | Pro
 
@@ -22,8 +22,8 @@ public class Subscription
         SubscriptionPlan.Pro => 29m,
         _ => 0m
     };
-    public string? PaystackSubscriptionCode { get; set; } // Paystack's reference, null while on Free
-    public DateTime StartedAt { get; set; }
+    public string? PaystackSubscriptionCode { get; set; } // Paystack's reference .this is one that actually Id'd my subscription from procviders side.
+    public DateTime StartedAt { get; set; }//
     public DateTime? ExpiresAt { get; set; }
     public bool IsActive { get; set; }
 }
