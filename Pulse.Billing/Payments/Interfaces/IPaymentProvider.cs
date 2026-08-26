@@ -20,5 +20,5 @@ public interface IPaymentProvider
 
     //Task<ChargeAuthorizationResult> ChargeAuthorization(ChargeAuthorizationRequest request);
 
-    //Task<ListBanksResult> ListBanks();
+    //Task<listbanksresult> listbanks();
 }
