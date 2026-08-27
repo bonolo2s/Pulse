@@ -30,6 +30,8 @@ public static class DependencyInjection
         services.AddScoped<IPaymentMethodService, PaymentMethodService>();
         services.AddScoped<ISubscriptionExpirySweepService, SubscriptionExpirySweepService>();
         services.AddHostedService<SubscriptionExpirySweepHostedService>();
+        services.AddScoped<ISubscriptionRenewalSweepService, SubscriptionRenewalSweepService>();
+        services.AddHostedService<SubscriptionRenewalSweepHostedService>();
 
         return services;
     }

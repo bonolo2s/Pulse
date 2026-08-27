@@ -38,6 +38,7 @@ public class SubscriptionRenewalSweepService : ISubscriptionRenewalSweepService
         var userIds = dueSubscriptions.Select(s => s.UserId).Distinct();
         var emails = await _userLookupService.GetEmailsByUserIdsAsync(userIds);
 
+        //for now Sequential processing with try catch rather that crash...// once we scale
         foreach (var subscription in dueSubscriptions)
         {
             if (!emails.TryGetValue(subscription.UserId, out var email))
