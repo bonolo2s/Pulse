@@ -3,6 +3,8 @@ using Pulse.Billing.DataAccess;
 using Pulse.Billing.Entities;
 using Pulse.Billing.Enums;
 using Pulse.Billing.Interfaces;
+using Pulse.Billing.Payments.Interfaces;
+using Pulse.Billing.Payments.Paystack.DTOs;
 using Pulse.Shared.Interfaces;
 
 namespace Pulse.Billing.Services;
@@ -10,10 +12,12 @@ namespace Pulse.Billing.Services;
 public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
 {
     private readonly BillingDbContext _context;
+    private readonly IPaymentProvider _paymentProvider;
 
-    public SubscriptionService(BillingDbContext context)
+    public SubscriptionService(BillingDbContext context, IPaymentProvider paymentProvider)
     {
         _context = context;
+        _paymentProvider = paymentProvider;
     }
 
     public async Task<Subscription> CreateSubscriptionAsync(Subscription subscription) // Not a conflict .Admin might need it 
@@ -94,6 +98,38 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
             subscription.CancelAtPeriodEnd = false;
         }
 
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task RenewSubscriptionAsync(Guid subscriptionId)
+    {
+        var subscription = await _context.Subscriptions
+            .FirstOrDefaultAsync(s => s.Id == subscriptionId && s.IsActive)
+            ?? throw new KeyNotFoundException($"Subscription {subscriptionId} not found.");
+
+        var paymentMethod = await _context.PaymentMethods
+            .FirstOrDefaultAsync(pm => pm.UserId == subscription.UserId && pm.IsDefault)
+            ?? throw new InvalidOperationException($"No default payment method for user {subscription.UserId}.");
+
+        var result = await _paymentProvider.ChargeAuthorization(new ChargeAuthorizationRequest(
+            Email: /* need user email — not on Subscription or PaymentMethod */,
+            Amount: subscription.MonthlyPrice,
+            AuthorizationCode: paymentMethod.AuthorizationCode
+        ));
+
+        var payment = new Payment
+        {
+            Id = Guid.NewGuid(),
+            UserId = subscription.UserId,
+            InvoiceId = /* ? */,
+            Amount = subscription.MonthlyPrice,
+            Status = PaymentStatus.Pending,
+            Provider = "Paystack",
+            ProviderReference = result.Reference,
+            CreatedAt = DateTime.UtcNow
+        };
+
+        _context.Payments.Add(payment);
         await _context.SaveChangesAsync();
     }
 }
