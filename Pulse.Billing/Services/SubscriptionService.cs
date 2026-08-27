@@ -102,40 +102,6 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
         await _context.SaveChangesAsync();
     }
 
-    public async Task RenewSubscriptionAsync(Guid subscriptionId, string email)
-    {
-        var subscription = await _context.Subscriptions
-            .FirstOrDefaultAsync(s => s.Id == subscriptionId && s.IsActive)
-            ?? throw new KeyNotFoundException($"Subscription {subscriptionId} not found.");
-
-        var paymentMethod = await _context.PaymentMethods
-            .FirstOrDefaultAsync(pm => pm.UserId == subscription.UserId && pm.IsDefault)
-            ?? throw new InvalidOperationException($"No default payment method for user {subscription.UserId}.");
-
-        var result = await _paymentProvider.ChargeAuthorization(new ChargeAuthorizationRequest(
-            Email: email,
-            Amount: subscription.MonthlyPrice,
-            AuthorizationCode: paymentMethod.AuthorizationCode
-        ));
-
-        var invoice = await _invoiceService.CreatePendingInvoiceAsync(request.UserId, subscription.Id, amount, currency);
-
-        var payment = new Payment
-        {
-            Id = Guid.NewGuid(),
-            UserId = subscription.UserId,
-            InvoiceId = /* ? */,
-            Amount = subscription.MonthlyPrice,
-            Status = PaymentStatus.Pending,
-            Provider = "Paystack",
-            ProviderReference = result.Reference,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        _context.Payments.Add(payment);
-        await _context.SaveChangesAsync();
-    }
-
     public async Task<Subscription> GetSubscriptionForRenewalAsync(Guid subscriptionId)
     {
         return await _context.Subscriptions
