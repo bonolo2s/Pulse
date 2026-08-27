@@ -6,6 +6,7 @@ using Microsoft.IdentityModel.Tokens;
 using Pulse.Identity.DataAccess;
 using Pulse.Identity.Interfaces;
 using Pulse.Identity.Services;
+using Pulse.Shared.Interfaces;
 using System.Text;
 
 namespace Pulse.Identity;
@@ -23,6 +24,7 @@ public static class DependencyInjection
         services.AddScoped<IAuthService, AuthService>();
         services.AddScoped<ITokenService, JwtTokenService>();
         services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+        services.AddScoped<IUserLookupService, UserLookupService>();
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
