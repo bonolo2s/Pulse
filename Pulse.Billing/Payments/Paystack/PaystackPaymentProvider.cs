@@ -20,6 +20,27 @@ public class PaystackPaymentProvider : IPaymentProvider
             new AuthenticationHeaderValue("Bearer", secretKey);
     }
 
+    public async Task<ChargeAuthorizationResult> ChargeAuthorization(ChargeAuthorizationRequest request)
+    {
+        var payload = new
+        {
+            email = request.Email,
+            amount = (int)(request.Amount * 100),
+            authorization_code = request.AuthorizationCode
+        };
+
+        var response = await _httpClient.PostAsJsonAsync("transaction/charge_authorization", payload);
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var data = json.GetProperty("data");
+        return new ChargeAuthorizationResult(
+            data.GetProperty("reference").GetString()!,//new payment reference
+            data.GetProperty("status").GetString()!,
+            data.GetProperty("amount").GetInt32() / 100m
+        );
+    }
+
     public async Task<InitializeTransactionResult> InitializeTransaction(InitializeTransactionRequest request)
     {
         var payload = new
