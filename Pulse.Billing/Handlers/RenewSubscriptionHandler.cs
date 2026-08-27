@@ -6,6 +6,7 @@ using Pulse.Billing.Enums;
 using Pulse.Billing.Interfaces;
 using Pulse.Billing.Payments.Interfaces;
 using Pulse.Billing.Payments.Paystack.DTOs;
+using Pulse.Billing.Services;
 namespace Pulse.Billing.Handlers;
 public class RenewSubscriptionHandler : IRequestHandler<RenewSubscriptionCommand>
 {
@@ -13,20 +14,20 @@ public class RenewSubscriptionHandler : IRequestHandler<RenewSubscriptionCommand
     private readonly IPaymentMethodService _paymentMethodService;
     private readonly IInvoiceService _invoiceService;
     private readonly IPaymentProvider _paymentProvider;
-    private readonly BillingDbContext _context;
+    private readonly IBillingService _billingService;
 
     public RenewSubscriptionHandler(
         ISubscriptionService subscriptionService,
         IPaymentMethodService paymentMethodService,
         IInvoiceService invoiceService,
         IPaymentProvider paymentProvider,
-        BillingDbContext context)
+        IBillingService billingService)
     {
         _subscriptionService = subscriptionService;
         _paymentMethodService = paymentMethodService;
         _invoiceService = invoiceService;
         _paymentProvider = paymentProvider;
-        _context = context;
+        _billingService = billingService;
     }
 
     public async Task Handle(RenewSubscriptionCommand request, CancellationToken cancellationToken)
@@ -44,20 +45,6 @@ public class RenewSubscriptionHandler : IRequestHandler<RenewSubscriptionCommand
         ));
 
         var invoice = await _invoiceService.CreatePendingInvoiceAsync(subscription.UserId, subscription.Id, subscription.MonthlyPrice, "ZAR");
-
-        var payment = new Payment
-        {
-            Id = Guid.NewGuid(),
-            UserId = subscription.UserId,
-            InvoiceId = invoice.Id,
-            Amount = subscription.MonthlyPrice,
-            Status = PaymentStatus.Pending,
-            Provider = "Paystack",
-            ProviderReference = result.Reference,
-            CreatedAt = DateTime.UtcNow
-        };
-
-        _context.Payments.Add(payment);
-        await _context.SaveChangesAsync();
+        await _billingService.CreatePendingPaymentAsync(subscription.UserId, invoice.Id, subscription.MonthlyPrice, result.Reference);
     }
 }
