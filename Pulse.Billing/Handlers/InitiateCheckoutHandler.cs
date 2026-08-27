@@ -4,6 +4,7 @@ using Microsoft.Extensions.Configuration;
 using Pulse.Billing.Commands;
 using Pulse.Billing.DataAccess;
 using Pulse.Billing.Entities;
+using Pulse.Billing.Enums;
 using Pulse.Billing.Interfaces;
 using Pulse.Billing.Payments.Interfaces;
 using Pulse.Billing.Payments.Paystack.DTOs;
@@ -53,7 +54,7 @@ public class InitiateCheckoutHandler : IRequestHandler<InitiateCheckoutCommand, 
 
         var result = await _paymentProvider.InitializeTransaction(paystackRequest);
 
-        var invoice = await _invoiceService.CreatePendingInvoiceAsync(request.UserId, subscription.Id, amount, currency);
+        var invoice = await _invoiceService.CreatePendingInvoiceAsync(request.UserId, subscription.Id, amount, currency, InvoiceType.Initial);
         var payment = await _billingService.CreatePendingPaymentAsync(request.UserId, invoice.Id, amount, result.Reference);
 
         await _eventWriter.LogEventAsync(
