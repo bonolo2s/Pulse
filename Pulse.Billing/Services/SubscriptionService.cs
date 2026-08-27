@@ -1,4 +1,5 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using MediatR;
+using Microsoft.EntityFrameworkCore;
 using Pulse.Billing.DataAccess;
 using Pulse.Billing.Entities;
 using Pulse.Billing.Enums;
@@ -13,13 +14,11 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
 {
     private readonly BillingDbContext _context;
     private readonly IPaymentProvider _paymentProvider;
-    private readonly IUserLookupService _userLookupService;
 
-    public SubscriptionService(BillingDbContext context, IPaymentProvider paymentProvider, IUserLookupService userLookupService)
+    public SubscriptionService(BillingDbContext context, IPaymentProvider paymentProvider)
     {
         _context = context;
         _paymentProvider = paymentProvider;
-        _userLookupService = userLookupService;
     }
 
     public async Task<Subscription> CreateSubscriptionAsync(Subscription subscription) // Not a conflict .Admin might need it 
@@ -119,6 +118,8 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
             AuthorizationCode: paymentMethod.AuthorizationCode
         ));
 
+        var invoice = await _invoiceService.CreatePendingInvoiceAsync(request.UserId, subscription.Id, amount, currency);
+
         var payment = new Payment
         {
             Id = Guid.NewGuid(),
@@ -133,5 +134,12 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
 
         _context.Payments.Add(payment);
         await _context.SaveChangesAsync();
+    }
+
+    public async Task<Subscription> GetSubscriptionForRenewalAsync(Guid subscriptionId)
+    {
+        return await _context.Subscriptions
+            .FirstOrDefaultAsync(s => s.Id == subscriptionId && s.IsActive)
+            ?? throw new KeyNotFoundException($"Subscription {subscriptionId} not found.");
     }
 }
