@@ -1,4 +1,6 @@
-﻿namespace Pulse.Billing.Entities;
+﻿using Pulse.Billing.Enums;
+
+namespace Pulse.Billing.Entities;
 
 public class Invoice
 {
@@ -10,6 +12,8 @@ public class Invoice
     public string Currency { get; set; } = string.Empty;
 
     public InvoiceStatus Status { get; set; } // Paid | Failed | Pending 
+    public InvoiceType Type { get; set; } // Initial | Renewal
+
     //public string? PaymentReference { get; set; } // Stripe/PayPal transaction ID //
     public DateTime IssuedAt { get; set; }
     public DateTime? PaidAt { get; set; }
