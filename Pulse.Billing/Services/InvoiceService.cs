@@ -23,7 +23,7 @@ public class InvoiceService : IInvoiceService
             .ToListAsync();
     }
 
-    public async Task<Invoice> CreatePendingInvoiceAsync(Guid userId, Guid subscriptionId, decimal amount, string currency)
+    public async Task<Invoice> CreatePendingInvoiceAsync(Guid userId, Guid subscriptionId, decimal amount, string currency, InvoiceType type)
     {
         var invoice = new Invoice
         {
@@ -33,6 +33,7 @@ public class InvoiceService : IInvoiceService
             Amount = amount,
             Currency = currency,
             Status = InvoiceStatus.Pending,
+            Type = type,
             IssuedAt = DateTime.UtcNow
         };
 
