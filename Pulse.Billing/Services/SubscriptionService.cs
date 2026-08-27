@@ -13,11 +13,13 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
 {
     private readonly BillingDbContext _context;
     private readonly IPaymentProvider _paymentProvider;
+    private readonly IUserLookupService _userLookupService;
 
-    public SubscriptionService(BillingDbContext context, IPaymentProvider paymentProvider)
+    public SubscriptionService(BillingDbContext context, IPaymentProvider paymentProvider, IUserLookupService userLookupService)
     {
         _context = context;
         _paymentProvider = paymentProvider;
+        _userLookupService = userLookupService;
     }
 
     public async Task<Subscription> CreateSubscriptionAsync(Subscription subscription) // Not a conflict .Admin might need it 
@@ -101,7 +103,7 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
         await _context.SaveChangesAsync();
     }
 
-    public async Task RenewSubscriptionAsync(Guid subscriptionId)
+    public async Task RenewSubscriptionAsync(Guid subscriptionId, string email)
     {
         var subscription = await _context.Subscriptions
             .FirstOrDefaultAsync(s => s.Id == subscriptionId && s.IsActive)
@@ -112,7 +114,7 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
             ?? throw new InvalidOperationException($"No default payment method for user {subscription.UserId}.");
 
         var result = await _paymentProvider.ChargeAuthorization(new ChargeAuthorizationRequest(
-            Email: /* need user email — not on Subscription or PaymentMethod */,
+            Email: email,
             Amount: subscription.MonthlyPrice,
             AuthorizationCode: paymentMethod.AuthorizationCode
         ));

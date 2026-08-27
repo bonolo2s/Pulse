@@ -9,7 +9,7 @@ public interface ISubscriptionService
     Task CancelSubscriptionAsync(Guid userId);
     Task<Subscription> GetSubscriptionAsync(Guid userId);
     Task ProcessExpiredSubscriptionsAsync();
-    Task RenewSubscriptionAsync(Guid subscriptionId);
+    Task RenewSubscriptionAsync(Guid subscriptionId, string email);
 }
 
 //RenewSubscriptionAsync — handles the recurring charge webhook event (Paystack subscription.create/charge.success on renewal), extends ExpiresAt again
