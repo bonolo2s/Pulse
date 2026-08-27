@@ -7,6 +7,7 @@ namespace Pulse.Billing.Payments.Paystack.DTOs
 {
     public record ChargeAuthorizationResult(
         string Reference,
-        string Status
+        string Status,
+        decimal Amount
     );
 }

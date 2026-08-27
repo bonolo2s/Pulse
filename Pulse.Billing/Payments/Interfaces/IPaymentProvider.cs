@@ -18,7 +18,7 @@ public interface IPaymentProvider
 
     //Task<DisableSubscriptionResult> DisableSubscription(DisableSubscriptionRequest request);
 
-    //Task<ChargeAuthorizationResult> ChargeAuthorization(ChargeAuthorizationRequest request);
+    Task<ChargeAuthorizationResult> ChargeAuthorization(ChargeAuthorizationRequest request);
 
     //Task<listbanksresult> listbanks();
 }
