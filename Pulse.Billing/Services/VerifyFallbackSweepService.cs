@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Pulse.Billing.DataAccess;
 using Pulse.Billing.Enums;
@@ -11,18 +12,20 @@ public class VerifyFallbackSweepService : IVerifyFallbackSweepService
     private readonly IPaymentProvider _paymentProvider;
     private readonly IBillingService _billingService;
     private readonly ILogger<VerifyFallbackSweepService> _logger;
-    private readonly TimeSpan _stuckThreshold = TimeSpan.FromMinutes(15); // TODO: move to config
+    private readonly TimeSpan _stuckThreshold;
 
     public VerifyFallbackSweepService(
         BillingDbContext context,
         IPaymentProvider paymentProvider,
         IBillingService billingService,
-        ILogger<VerifyFallbackSweepService> logger)
+        ILogger<VerifyFallbackSweepService> logger,
+        IConfiguration configuration)
     {
         _context = context;
         _paymentProvider = paymentProvider;
         _billingService = billingService;
         _logger = logger;
+        _stuckThreshold = TimeSpan.FromMinutes(configuration.GetValue<int>("Billing:VerifyFallbackThresholdMinutes", 15));
     }
 
     public async Task SweepAsync(CancellationToken cancellationToken)
