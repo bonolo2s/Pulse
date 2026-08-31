@@ -63,4 +63,24 @@ public class PaystackPaymentProvider : IPaymentProvider
             data.GetProperty("reference").GetString()!
         );
     }
+
+    public async Task<VerifyTransactionResult> VerifyTransaction(string reference)
+    {
+        var response = await _httpClient.GetAsync($"transaction/verify/{reference}");
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var data = json.GetProperty("data");
+
+        var authorizationCode = data.TryGetProperty("authorization", out var auth) && auth.TryGetProperty("authorization_code", out var code)
+            ? code.GetString()
+            : null;
+
+        return new VerifyTransactionResult(
+            data.GetProperty("reference").GetString()!,
+            data.GetProperty("status").GetString()!,
+            data.GetProperty("amount").GetInt32() / 100m,
+            data.GetProperty("currency").GetString()!,
+            authorizationCode
+        );
+    }
 }
