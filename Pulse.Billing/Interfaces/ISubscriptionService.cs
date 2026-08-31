@@ -10,7 +10,5 @@ public interface ISubscriptionService
     Task<Subscription> GetSubscriptionAsync(Guid userId);
     Task ProcessExpiredSubscriptionsAsync();
     Task<Subscription> GetSubscriptionForRenewalAsync(Guid subscriptionId);
+    Task HandleFailedRenewalAsync(Guid subscriptionId);
 }
-
-//RenewSubscriptionAsync — handles the recurring charge webhook event (Paystack subscription.create/charge.success on renewal), extends ExpiresAt again
-//HandleFailedRenewalAsync — recurring charge fails (card declined etc.) — grace period vs immediate downgrade decision

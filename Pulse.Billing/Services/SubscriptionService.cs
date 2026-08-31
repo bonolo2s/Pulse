@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Pulse.Billing.DataAccess;
 using Pulse.Billing.Entities;
 using Pulse.Billing.Enums;
@@ -14,11 +15,14 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
 {
     private readonly BillingDbContext _context;
     private readonly IPaymentProvider _paymentProvider;
+    private readonly IConfiguration _configuration;
 
-    public SubscriptionService(BillingDbContext context, IPaymentProvider paymentProvider)
+
+    public SubscriptionService(BillingDbContext context, IPaymentProvider paymentProvider, IConfiguration configuration)
     {
         _context = context;
         _paymentProvider = paymentProvider;
+        _configuration = configuration;
     }
 
     public async Task<Subscription> CreateSubscriptionAsync(Subscription subscription) // Not a conflict .Admin might need it 
@@ -107,5 +111,29 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
         return await _context.Subscriptions
             .FirstOrDefaultAsync(s => s.Id == subscriptionId && s.IsActive)
             ?? throw new KeyNotFoundException($"Subscription {subscriptionId} not found.");
+    }
+
+    public async Task HandleFailedRenewalAsync(Guid subscriptionId)
+    {
+        var subscription = await _context.Subscriptions
+            .FirstOrDefaultAsync(s => s.Id == subscriptionId && s.IsActive)
+            ?? throw new KeyNotFoundException($"Subscription {subscriptionId} not found.");
+
+        if (subscription.GracePeriodEndsAt == null)
+        {
+            // First failure — start grace period, keep them on Pro
+            subscription.GracePeriodEndsAt = DateTime.UtcNow.AddDays(_configuration.GetValue<int>("Billing:GracePeriodDays", 3));
+        }
+        else if (subscription.GracePeriodEndsAt <= DateTime.UtcNow)
+        {
+            // Grace period exhausted, still failing — downgrade
+            subscription.Plan = SubscriptionPlan.Free;
+            subscription.ExpiresAt = null;
+            subscription.GracePeriodEndsAt = null;
+        }
+
+        // else: still within grace, already tracked, nothing new to do — next sweep cycle will retry
+
+        await _context.SaveChangesAsync();
     }
 }
