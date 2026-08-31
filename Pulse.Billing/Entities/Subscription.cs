@@ -26,5 +26,6 @@ public class Subscription
     public DateTime StartedAt { get; set; }//
     public DateTime? ExpiresAt { get; set; }
     public bool CancelAtPeriodEnd { get; set; }
+    public DateTime? GracePeriodEndsAt { get; set; }
     public bool IsActive { get; set; }
 }
