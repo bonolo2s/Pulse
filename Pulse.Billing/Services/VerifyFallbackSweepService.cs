@@ -39,8 +39,7 @@ public class VerifyFallbackSweepService : IVerifyFallbackSweepService
             {
                 var result = await _paymentProvider.VerifyTransaction(payment.ProviderReference!);
 
-                // TODO: Ill mark this as BillingEventSource.VerifyFallback once ProcessPaymentResultAsync's signature supports it.
-                await _billingService.ProcessPaymentResultAsync(result.Reference, result.Status, null, null);
+                await _billingService.ProcessPaymentResultAsync(result.Reference, result.Status, result.Channel, result.Authorization);
             }
             catch (Exception ex)
             {
