@@ -13,12 +13,16 @@ public class BillingService : IBillingService, IBillingValidator
     private readonly BillingDbContext _context;
     private readonly IBillingEventWriter _eventWriter;
     private readonly IPaymentMethodService _paymentMethodService;
-
-    public BillingService(BillingDbContext context, IBillingEventWriter eventWriter, IPaymentMethodService paymentMethodService)
+    private readonly ISubscriptionService _subscriptionService;
+    public BillingService(BillingDbContext context,
+        IBillingEventWriter eventWriter,
+        IPaymentMethodService paymentMethodService,
+        ISubscriptionService subscriptionService)
     {
         _context = context;
         _eventWriter = eventWriter;
         _paymentMethodService = paymentMethodService;
+        _subscriptionService = subscriptionService;
     }
 
     public async Task ProcessPaymentResultAsync(string paymentReference, string status, string? channel, PaystackAuthorization? authorization) //**
@@ -96,6 +100,10 @@ public class BillingService : IBillingService, IBillingValidator
 
                 await _paymentMethodService.SavePaymentMethodAsync(paymentMethod);
             }
+        }
+        else if (parsedStatus == PaymentStatus.Failed && invoice.Type == InvoiceType.Renewal)
+        {
+            await _subscriptionService.HandleFailedRenewalAsync(invoice.SubscriptionId);
         }
 
         await _context.SaveChangesAsync();
