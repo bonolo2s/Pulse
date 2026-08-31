@@ -6,7 +6,7 @@ public interface IPaymentProvider
 {
     Task<InitializeTransactionResult> InitializeTransaction(InitializeTransactionRequest request);
 
-    //Task<VerifyTransactionResult> VerifyTransaction(string reference);// fallback for Ghost webhooks that dont arrive
+    Task<VerifyTransactionResult> VerifyTransaction(string reference);// fallback for Ghost webhooks that dont arrive.
 
     //Task<CreateCustomerResult> CreateCustomer(CreateCustomerRequest request);
 
