@@ -23,9 +23,9 @@ public class Subscription
         _ => 0m
     };
     public string? PaystackSubscriptionCode { get; set; } // Paystack's reference .this is one that actually Id's my subscription from procviders side( for reccurring arrangement purposes)
-    public DateTime StartedAt { get; set; }//
-    public DateTime? ExpiresAt { get; set; }
-    public bool CancelAtPeriodEnd { get; set; }
-    public DateTime? GracePeriodEndsAt { get; set; }
+    public DateTime StartedAt { get; set; }
+    public DateTime? ExpiresAt { get; set; }//...to track validity of subscription
+    public bool CancelAtPeriodEnd { get; set; }//will auto sweep at period
+    public DateTime? GracePeriodEndsAt { get; set; }// keep retrying via the renewal sweep
     public bool IsActive { get; set; }
 }
