@@ -13,7 +13,7 @@
         public string Reference { get; set; } = string.Empty;//from chcekout in
         public int Amount { get; set; }
         public string Currency { get; set; } = string.Empty;
-        public string? Channel { get; set; }
+        public string? Channel { get; set; } //card/bank
         public PaystackWebhookCustomer Customer { get; set; } = null!;
         public DateTime? PaidAt { get; set; }
         public PaystackAuthorization? Authorization { get; set; }

@@ -71,16 +71,30 @@ public class PaystackPaymentProvider : IPaymentProvider
         var json = await response.Content.ReadFromJsonAsync<JsonElement>();
         var data = json.GetProperty("data");
 
-        var authorizationCode = data.TryGetProperty("authorization", out var auth) && auth.TryGetProperty("authorization_code", out var code)
-            ? code.GetString()
-            : null;
+        var channel = data.TryGetProperty("channel", out var ch) ? ch.GetString() : null;
+
+        PaystackAuthorization? authorization = null;
+        if (data.TryGetProperty("authorization", out var authElement) && authElement.ValueKind == JsonValueKind.Object)
+        {
+            authorization = new PaystackAuthorization
+            {
+                AuthorizationCode = authElement.GetProperty("authorization_code").GetString() ?? string.Empty,
+                CardType = authElement.TryGetProperty("card_type", out var ct) ? ct.GetString() ?? string.Empty : string.Empty,
+                Last4 = authElement.TryGetProperty("last4", out var l4) ? l4.GetString() ?? string.Empty : string.Empty,
+                ExpMonth = authElement.TryGetProperty("exp_month", out var em) ? em.GetString() ?? string.Empty : string.Empty,
+                ExpYear = authElement.TryGetProperty("exp_year", out var ey) ? ey.GetString() ?? string.Empty : string.Empty,
+                Bank = authElement.TryGetProperty("bank", out var b) ? b.GetString() ?? string.Empty : string.Empty,
+                Reusable = authElement.TryGetProperty("reusable", out var r) && r.GetBoolean()
+            };
+        }
 
         return new VerifyTransactionResult(
             data.GetProperty("reference").GetString()!,
             data.GetProperty("status").GetString()!,
             data.GetProperty("amount").GetInt32() / 100m,
             data.GetProperty("currency").GetString()!,
-            authorizationCode
+            channel,
+            authorization
         );
     }
 }

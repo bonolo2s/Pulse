@@ -5,6 +5,7 @@
         string Status,
         decimal Amount,
         string Currency,
+        string? Channel,
         PaystackAuthorization? Authorization
     );
 }
