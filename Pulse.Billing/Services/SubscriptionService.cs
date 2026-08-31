@@ -92,8 +92,14 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
 
     public async Task ProcessExpiredSubscriptionsAsync()
     {
+        var buffer = TimeSpan.FromHours(_configuration.GetValue<int>("Billing:StuckRenewalBufferHours", 24));
+
         var expiredSubscriptions = await _context.Subscriptions
-            .Where(s => s.IsActive && s.CancelAtPeriodEnd && s.ExpiresAt <= DateTime.UtcNow)
+            .Where(s => s.IsActive && s.Plan == SubscriptionPlan.Pro && s.ExpiresAt != null && (
+                (s.CancelAtPeriodEnd && s.ExpiresAt <= DateTime.UtcNow) || // user cancelled, period ended
+                (s.GracePeriodEndsAt != null && s.GracePeriodEndsAt <= DateTime.UtcNow) || // grace period ran out
+                (s.GracePeriodEndsAt == null && !s.CancelAtPeriodEnd && s.ExpiresAt <= DateTime.UtcNow - buffer) // renewal never resolved, verify fallback likely down
+            ))
             .ToListAsync();
 
         foreach (var subscription in expiredSubscriptions)
@@ -101,6 +107,7 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
             subscription.Plan = SubscriptionPlan.Free;
             subscription.ExpiresAt = null;
             subscription.CancelAtPeriodEnd = false;
+            subscription.GracePeriodEndsAt = null;
         }
 
         await _context.SaveChangesAsync();
