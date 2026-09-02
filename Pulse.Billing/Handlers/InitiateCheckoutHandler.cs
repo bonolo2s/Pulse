@@ -42,6 +42,7 @@ public class InitiateCheckoutHandler : IRequestHandler<InitiateCheckoutCommand, 
             ?? throw new KeyNotFoundException($"Subscription for user {request.UserId} not found.");
 
         var amount = _configuration.GetValue<decimal>("Paystack:Plans:Pro");
+        var planCode = _configuration["Paystack:Plans:ProCode"]!;
         var callbackUrl = _configuration["Paystack:CallbackUrl"]!;
         const string currency = "ZAR";
 
@@ -49,23 +50,21 @@ public class InitiateCheckoutHandler : IRequestHandler<InitiateCheckoutCommand, 
             request.Email,
             amount,
             currency,
-            callbackUrl
+            callbackUrl,
+            planCode
         );
 
         var result = await _paymentProvider.InitializeTransaction(paystackRequest);
 
-        var invoice = await _invoiceService.CreatePendingInvoiceAsync(request.UserId, subscription.Id, amount, currency, InvoiceType.Initial);
-        var payment = await _billingService.CreatePendingPaymentAsync(request.UserId, invoice.Id, amount, result.Reference);
-
         await _eventWriter.LogEventAsync(
             eventType: BillingEventType.PaymentInitiated,
             source: BillingEventSource.Client,
-            paymentId: payment.Id,
+            paymentId: null,
             userId: request.UserId,
-            paystackEventId: null,
+            paystackEventId: result.Reference,
             payload: null,
             previousStatus: null,
-            newStatus: payment.Status.ToString());
+            newStatus: null);
 
         return result;
     }
