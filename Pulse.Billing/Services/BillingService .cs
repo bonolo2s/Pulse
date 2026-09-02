@@ -101,6 +101,8 @@ public class BillingService : IBillingService, IBillingValidator
                 await _paymentMethodService.SavePaymentMethodAsync(paymentMethod);
             }
         }
+
+        //marks them for gracePeriod.
         else if (parsedStatus == PaymentStatus.Failed && invoice.Type == InvoiceType.Renewal)
         {
             await _subscriptionService.HandleFailedRenewalAsync(invoice.SubscriptionId);

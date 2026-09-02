@@ -97,8 +97,8 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
         var expiredSubscriptions = await _context.Subscriptions
             .Where(s => s.IsActive && s.Plan == SubscriptionPlan.Pro && s.ExpiresAt != null && (
                 (s.CancelAtPeriodEnd && s.ExpiresAt <= DateTime.UtcNow) || // user cancelled, period ended
-                (s.GracePeriodEndsAt != null && s.GracePeriodEndsAt <= DateTime.UtcNow) || // grace period ran out
-                (s.GracePeriodEndsAt == null && !s.CancelAtPeriodEnd && s.ExpiresAt <= DateTime.UtcNow - buffer) // renewal never resolved, verify fallback likely down
+                (s.GracePeriodEndsAt != null && s.GracePeriodEndsAt <= DateTime.UtcNow) || // grace period ran out for failed subscriptions.
+                (s.GracePeriodEndsAt == null && !s.CancelAtPeriodEnd && s.ExpiresAt <= DateTime.UtcNow - buffer) // renewal never resolved them, verify fallback likely down
             ))
             .ToListAsync();
 

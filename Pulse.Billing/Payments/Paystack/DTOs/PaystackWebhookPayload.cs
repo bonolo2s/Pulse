@@ -2,7 +2,7 @@
 {
     public class PaystackWebhookPayload
     {
-        public string Event { get; set; } = string.Empty;
+        public string Event { get; set; } = string.Empty; //identifies one specific webhook delivery
         public PaystackWebhookData Data { get; set; } = null!;
     }
 
@@ -10,7 +10,7 @@
     {
         public long Id { get; set; }
         public string Status { get; set; } = string.Empty;
-        public string Reference { get; set; } = string.Empty;//from chcekout in
+        public string Reference { get; set; } = string.Empty;//from chcekout in remains same for same payment attempt
         public int Amount { get; set; }
         public string Currency { get; set; } = string.Empty;
         public string? Channel { get; set; } //card/bank

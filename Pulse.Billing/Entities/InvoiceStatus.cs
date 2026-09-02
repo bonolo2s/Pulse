@@ -1,8 +1,7 @@
-﻿namespace Pulse.Billing.Entities;
-
-public enum InvoiceStatus
+﻿public enum InvoiceStatus
 {
-    Paid,
+    Success,
+    Attention,
     Failed,
-    Pending
+    Unknown
 }

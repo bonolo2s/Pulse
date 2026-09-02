@@ -11,7 +11,7 @@ public class Invoice
     public decimal Amount { get; set; }
     public string Currency { get; set; } = string.Empty;
 
-    public InvoiceStatus Status { get; set; } // Paid | Failed | Pending 
+    public InvoiceStatus Status { get; set; } // Success | Failed | Attention 
     public InvoiceType Type { get; set; } // Initial | Renewal
 
     //public string? PaymentReference { get; set; } // Stripe/PayPal transaction ID //
