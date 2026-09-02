@@ -48,7 +48,8 @@ public class PaystackPaymentProvider : IPaymentProvider
             email = request.Email,
             amount = (int)(request.Amount * 100),
             currency = request.Currency,
-            callback_url = request.CallbackUrl
+            callback_url = request.CallbackUrl,
+            plan = request.Plan
         };
 
         var response = await _httpClient.PostAsJsonAsync("transaction/initialize", payload);

@@ -10,6 +10,7 @@ namespace Pulse.Billing.Payments.Paystack.DTOs
         string Email,
         decimal Amount,
         string Currency,
-        string CallbackUrl
+        string CallbackUrl,
+        string Plan
     );
 }

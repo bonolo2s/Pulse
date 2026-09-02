@@ -67,7 +67,7 @@ public class BillingService : IBillingService, IBillingValidator
 
         if (parsedStatus == PaymentStatus.Successful)
         {
-            invoice.Status = InvoiceStatus.Paid;
+            invoice.Status = InvoiceStatus.Success;
             invoice.PaidAt = DateTime.UtcNow;
 
             var subscription = await _context.Subscriptions
