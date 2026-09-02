@@ -16,5 +16,10 @@ namespace Pulse.Identity.Services
                 .Where(u => userIds.Contains(u.Id))
                 .ToDictionaryAsync(u => u.Id, u => u.Email);
         }
+        public async Task<Guid?> GetUserIdByEmailAsync(string email)
+        {
+            var user = await _context.Users.FirstOrDefaultAsync(u => u.Email == email);
+            return user?.Id;
+        }
     }
 }

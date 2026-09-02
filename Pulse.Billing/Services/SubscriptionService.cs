@@ -15,14 +15,19 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
 {
     private readonly BillingDbContext _context;
     private readonly IPaymentProvider _paymentProvider;
+    private readonly IUserLookupService _userLookup;
     private readonly IConfiguration _configuration;
 
 
-    public SubscriptionService(BillingDbContext context, IPaymentProvider paymentProvider, IConfiguration configuration)
+    public SubscriptionService(BillingDbContext context,
+        IPaymentProvider paymentProvider,
+        IConfiguration configuration,
+        IUserLookupService userLookup)
     {
         _context = context;
         _paymentProvider = paymentProvider;
         _configuration = configuration;
+        _userLookup = userLookup;
     }
 
     public async Task<Subscription> CreateSubscriptionAsync(Subscription subscription) // Not a conflict .Admin might need it 
@@ -140,6 +145,25 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
         }
 
         // else: still within grace, already tracked, nothing new to do — next sweep cycle will retry
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task ActivateSubscriptionFromWebhookAsync(string email, string subscriptionCode, string emailToken, string customerCode)
+    {
+        var userId = await _userLookup.GetUserIdByEmailAsync(email)
+            ?? throw new KeyNotFoundException($"User with email {email} not found.");
+
+        var subscription = await _context.Subscriptions
+            .FirstOrDefaultAsync(s => s.UserId == userId && s.IsActive)
+            ?? throw new KeyNotFoundException($"Subscription for user {userId} not found.");
+
+        subscription.Plan = SubscriptionPlan.Pro;
+        subscription.PaystackSubscriptionCode = subscriptionCode;
+        subscription.EmailToken = emailToken;
+        subscription.PaystackCustomerCode = customerCode;
+        subscription.StartedAt = DateTime.UtcNow;
+        subscription.ExpiresAt = DateTime.UtcNow.AddMonths(1);
 
         await _context.SaveChangesAsync();
     }
