@@ -6,6 +6,7 @@ public class Subscription
 {
     public Guid Id { get; set; } //internal use by my DB
     public Guid UserId { get; set; }
+    public string? EmailToken { get; set; } // required alongside PaystackSubscriptionCode for the disable-subscription call
     public SubscriptionPlan Plan { get; set; } // Free | Pro
 
     [NotMapped]
