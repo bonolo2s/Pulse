@@ -18,5 +18,12 @@ public enum BillingEventType
     ChargeFailed,
 
     SubscriptionEnable,
-    SubscriptionDisable
+    SubscriptionDisable,
+    SubscriptionCreate,
+    SubscriptionNotRenew,
+    SubscriptionExpiringCards,
+
+    InvoiceCreate,
+    InvoiceUpdate,
+    Unknown
 }
