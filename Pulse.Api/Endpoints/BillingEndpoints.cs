@@ -177,18 +177,27 @@ public static class BillingEndpoints
                 //theres a silennt bug...on BE doesnt upfare but UI says success
             }
 
+            var eventPeek = JsonSerializer.Deserialize<JsonElement>(rawBody);
+            var eventName = eventPeek.GetProperty("event").GetString();
 
-            var payload = JsonSerializer.Deserialize<PaystackWebhookPayload>(rawBody, new JsonSerializerOptions
+            if (eventName == "charge.success")
             {
-                PropertyNameCaseInsensitive = true
-            });
-
-            if (payload?.Event == "charge.success")
+                var payload = JsonSerializer.Deserialize<PaystackWebhookPayload>(rawBody, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                await mediator.Send(new ProcessPaymentResultCommand(payload!.Data.Reference, payload.Data.Status, payload.Data.Channel, payload.Data.Authorization));
+            }
+            else if (eventName == "subscription.create")
             {
-                await mediator.Send(new ProcessPaymentResultCommand(payload.Data.Reference, payload.Data.Status, payload.Data.Channel, payload.Data.Authorization));
+                var payload = JsonSerializer.Deserialize<PaystackSubscriptionWebhookPayload>(rawBody, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                await mediator.Send(new ActivateSubscriptionCommand(payload!.Data.Customer.Email, payload.Data.SubscriptionCode, payload.Data.EmailToken, payload.Data.Customer.CustomerCode));
             }
 
-            return Results.NoContent();
+            return Results.NoContent(); ;
         })
         .WithName("SyncPaymentWebhook")
         .WithTags("Billing")
