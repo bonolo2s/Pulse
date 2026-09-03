@@ -55,6 +55,29 @@ public class InvoiceService : IInvoiceService
             .ToListAsync();
     }
 
+    public async Task UpdateInvoiceFromWebhookAsync(string invoiceCode, string status, bool paid)
+    {
+        var invoice = await _context.Invoices
+            .FirstOrDefaultAsync(i => i.InvoiceCode == invoiceCode)
+            ?? throw new KeyNotFoundException($"Invoice with code {invoiceCode} not found.");
+
+        var parsedStatus = status.ToLowerInvariant() switch
+        {
+            "success" => InvoiceStatus.Success,
+            "attention" => InvoiceStatus.Attention,
+            "failed" => InvoiceStatus.Failed,
+            _ => InvoiceStatus.Unknown
+        };
+
+        invoice.Status = parsedStatus;
+        if (paid)
+        {
+            invoice.PaidAt = DateTime.UtcNow;
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
     //public async Task<Invoice> CreatePendingInvoiceAsync(Guid userId, Guid subscriptionId, decimal amount, string currency, InvoiceType type)
     //{
     //    var invoice = new Invoice
