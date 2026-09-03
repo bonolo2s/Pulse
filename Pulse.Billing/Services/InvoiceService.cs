@@ -23,23 +23,23 @@ public class InvoiceService : IInvoiceService
             .ToListAsync();
     }
 
-    public async Task<Invoice> CreatePendingInvoiceAsync(Guid userId, Guid subscriptionId, decimal amount, string currency, InvoiceType type)
-    {
-        var invoice = new Invoice
-        {
-            Id = Guid.NewGuid(),
-            UserId = userId,
-            SubscriptionId = subscriptionId,
-            Amount = amount,
-            Currency = currency,
-            Status = InvoiceStatus.Pending,
-            Type = type,
-            IssuedAt = DateTime.UtcNow
-        };
+    //public async Task<Invoice> CreatePendingInvoiceAsync(Guid userId, Guid subscriptionId, decimal amount, string currency, InvoiceType type)
+    //{
+    //    var invoice = new Invoice
+    //    {
+    //        Id = Guid.NewGuid(),
+    //        UserId = userId,
+    //        SubscriptionId = subscriptionId,
+    //        Amount = amount,
+    //        Currency = currency,
+    //        Status = InvoiceStatus.Pending,
+    //        Type = type,
+    //        IssuedAt = DateTime.UtcNow
+    //    };
 
-        _context.Invoices.Add(invoice);
-        await _context.SaveChangesAsync();
+    //    _context.Invoices.Add(invoice);
+    //    await _context.SaveChangesAsync();
 
-        return invoice;
-    }
+    //    return invoice;
+    //}
 }

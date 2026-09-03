@@ -44,7 +44,7 @@ public class RenewSubscriptionHandler : IRequestHandler<RenewSubscriptionCommand
             AuthorizationCode: paymentMethod.AuthorizationCode
         ));
 
-        var invoice = await _invoiceService.CreatePendingInvoiceAsync(subscription.UserId, subscription.Id, subscription.MonthlyPrice, "ZAR", InvoiceType.Renewal);
-        await _billingService.CreatePendingPaymentAsync(subscription.UserId, invoice.Id, subscription.MonthlyPrice, result.Reference);
+        //var invoice = await _invoiceService.CreatePendingInvoiceAsync(subscription.UserId, subscription.Id, subscription.MonthlyPrice, "ZAR", InvoiceType.Renewal);
+        //await _billingService.CreatePendingPaymentAsync(subscription.UserId, invoice.Id, subscription.MonthlyPrice, result.Reference);
     }
 }
