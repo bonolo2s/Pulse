@@ -211,6 +211,17 @@ public static class BillingEndpoints
                     payload.Data.Paid,
                     payload.Data.PaidAt));
             }
+            else if (eventName == "invoice.update")
+            {
+                var payload = JsonSerializer.Deserialize<PaystackInvoiceUpdateWebhookPayload>(rawBody, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                await mediator.Send(new UpdateInvoiceFromWebhookCommand(
+                    payload!.Data.InvoiceCode,
+                    payload.Data.Status,
+                    payload.Data.Paid));
+            }
 
             return Results.NoContent(); ;
         })
