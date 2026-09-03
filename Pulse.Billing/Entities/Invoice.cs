@@ -13,7 +13,7 @@ public class Invoice
 
     public InvoiceStatus Status { get; set; } // Success | Failed | Attention 
     public InvoiceType Type { get; set; } // Initial | Renewal
-    public string InvoiceCode { get; set; } = string.Empty;
+    public string InvoiceCode { get; set; } = string.Empty; // what provider Ids the invicoe with
 
     //public string? PaymentReference { get; set; } // Stripe/PayPal transaction ID //
     public DateTime IssuedAt { get; set; }

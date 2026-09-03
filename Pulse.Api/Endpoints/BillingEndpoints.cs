@@ -196,6 +196,21 @@ public static class BillingEndpoints
                 });
                 await mediator.Send(new ActivateSubscriptionCommand(payload!.Data.Customer.Email, payload.Data.SubscriptionCode, payload.Data.EmailToken, payload.Data.Customer.CustomerCode));
             }
+            else if (eventName == "invoice.create")
+            {
+                var payload = JsonSerializer.Deserialize<PaystackInvoiceWebhookPayload>(rawBody, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                await mediator.Send(new CreateInvoiceFromWebhookCommand(
+                    payload!.Data.Subscription.SubscriptionCode,
+                    payload.Data.InvoiceCode,
+                    payload.Data.Amount,
+                    payload.Data.Transaction.Currency,
+                    payload.Data.Status,
+                    payload.Data.Paid,
+                    payload.Data.PaidAt));
+            }
 
             return Results.NoContent(); ;
         })

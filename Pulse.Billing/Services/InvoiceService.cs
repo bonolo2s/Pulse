@@ -38,6 +38,7 @@ public class InvoiceService : IInvoiceService
             Currency = currency,
             Status = parsedStatus,
             Type = InvoiceType.Renewal,
+            InvoiceCode = invoiceCode,
             IssuedAt = DateTime.UtcNow,
             PaidAt = paidAt
         };
