@@ -15,6 +15,37 @@ public class InvoiceService : IInvoiceService
         _context = context;
     }
 
+    public async Task CreateInvoiceFromWebhookAsync(string subscriptionCode, string invoiceCode, int amount, string currency, string status, bool paid, DateTime? paidAt)
+    {
+        var subscription = await _context.Subscriptions
+            .FirstOrDefaultAsync(s => s.PaystackSubscriptionCode == subscriptionCode)
+            ?? throw new KeyNotFoundException($"Subscription with code {subscriptionCode} not found.");
+
+        var parsedStatus = status.ToLowerInvariant() switch
+        {
+            "success" => InvoiceStatus.Success,
+            "attention" => InvoiceStatus.Attention,
+            "failed" => InvoiceStatus.Failed,
+            _ => InvoiceStatus.Unknown
+        };
+
+        var invoice = new Invoice
+        {
+            Id = Guid.NewGuid(),
+            UserId = subscription.UserId,
+            SubscriptionId = subscription.Id,
+            Amount = amount / 100m,
+            Currency = currency,
+            Status = parsedStatus,
+            Type = InvoiceType.Renewal,
+            IssuedAt = DateTime.UtcNow,
+            PaidAt = paidAt
+        };
+
+        _context.Invoices.Add(invoice);
+        await _context.SaveChangesAsync();
+    }
+
     public async Task<IEnumerable<Invoice>> GetBillingHistoryAsync(Guid userId)
     {
         return await _context.Invoices

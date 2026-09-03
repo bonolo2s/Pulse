@@ -24,7 +24,7 @@ public class Subscription
         SubscriptionPlan.Pro => 29m,
         _ => 0m
     };
-    public string? PaystackSubscriptionCode { get; set; } // Paystack's reference .this is one that actually Id's my subscription from procviders side( for reccurring arrangement purposes)
+    public string? PaystackSubscriptionCode { get; set; } // Paystack's reference .this is one that actually Id's my subscription from providers side( for reccurring arrangement purposes)
     public DateTime StartedAt { get; set; }
     public DateTime? ExpiresAt { get; set; }//...to track validity of subscription
     public bool CancelAtPeriodEnd { get; set; }//will auto sweep at period
