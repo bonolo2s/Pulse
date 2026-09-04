@@ -11,6 +11,7 @@ public interface ISubscriptionService
     //Task ProcessExpiredSubscriptionsAsync();
     Task DowngradeSubscriptionFromWebhookAsync(string subscriptionCode);
     Task<Subscription> GetSubscriptionForRenewalAsync(Guid subscriptionId);
+    Task<Subscription?> GetSubscriptionByCodeAsync(string subscriptionCode);
     Task HandleFailedRenewalAsync(Guid subscriptionId);
     Task ActivateSubscriptionFromWebhookAsync(string email, string subscriptionCode, string emailToken, string customerCode);
 }

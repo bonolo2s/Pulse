@@ -191,4 +191,10 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
 
         await _context.SaveChangesAsync();
     }
+
+    public async Task<Subscription?> GetSubscriptionByCodeAsync(string subscriptionCode)
+    {
+        return await _context.Subscriptions
+            .FirstOrDefaultAsync(s => s.PaystackSubscriptionCode == subscriptionCode);
+    }
 }

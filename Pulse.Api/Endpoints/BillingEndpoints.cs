@@ -228,11 +228,18 @@ public static class BillingEndpoints
             }
             else if (eventName == "subscription.not_renew")
             {
+                var payload = JsonSerializer.Deserialize<PaystackSubscriptionStatusWebhookPayload>(rawBody, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+
+                var subscription = await mediator.Send(new GetSubscriptionByCodeQuery(payload!.Data.SubscriptionCode));
+
                 await eventWriter.LogEventAsync(
-                    eventType: BillingEventType.SubscriptionDisable, // no dedicated NotRenew value yet — flag below
+                    eventType: BillingEventType.SubscriptionNotRenew,
                     source: BillingEventSource.Webhook,
                     paymentId: null,
-                    userId: null,
+                    userId: subscription?.UserId,
                     paystackEventId: null,
                     payload: rawBody,
                     previousStatus: null,
