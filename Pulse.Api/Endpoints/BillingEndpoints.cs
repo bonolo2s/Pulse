@@ -251,7 +251,20 @@ public static class BillingEndpoints
                 {
                     PropertyNameCaseInsensitive = true
                 });
-                await mediator.Send(new DowngradeSubscriptionCommand(payload!.Data.SubscriptionCode));
+
+                var subscription = await mediator.Send(new GetSubscriptionByCodeQuery(payload!.Data.SubscriptionCode));
+
+                await mediator.Send(new DowngradeSubscriptionCommand(payload.Data.SubscriptionCode));
+
+                await eventWriter.LogEventAsync(
+                    eventType: BillingEventType.SubscriptionDisable,
+                    source: BillingEventSource.Webhook,
+                    paymentId: null,
+                    userId: subscription?.UserId,
+                    paystackEventId: null,
+                    payload: rawBody,
+                    previousStatus: null,
+                    newStatus: "Free");
             }
 
 
