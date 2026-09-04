@@ -158,12 +158,11 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
             .FirstOrDefaultAsync(s => s.UserId == userId && s.IsActive)
             ?? throw new KeyNotFoundException($"Subscription for user {userId} not found.");
 
-        subscription.Plan = SubscriptionPlan.Pro;
+        // Although Subscription.create is fired on successful charge .. 
+        //i prefer money related operstions to belong to Charge.sucess
         subscription.PaystackSubscriptionCode = subscriptionCode;
         subscription.EmailToken = emailToken;
         subscription.PaystackCustomerCode = customerCode;
-        subscription.StartedAt = DateTime.UtcNow;
-        subscription.ExpiresAt = DateTime.UtcNow.AddMonths(1);
 
         await _context.SaveChangesAsync();
     }
