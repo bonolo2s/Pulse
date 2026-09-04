@@ -1,10 +1,10 @@
 ﻿using MediatR;
 using Pulse.Billing.Payments.Paystack.DTOs;
 
-namespace Pulse.Billing.Commands;
-
 public record ProcessPaymentResultCommand(
     string PaymentReference,
+    string EventId,
     string Status,
     string? Channel,
+    string Email,
     PaystackAuthorization? Authorization) : IRequest;

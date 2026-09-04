@@ -11,6 +11,6 @@ public class SyncPaymentWebhookHandler : IRequestHandler<ProcessPaymentResultCom
     }
     public async Task Handle(ProcessPaymentResultCommand request, CancellationToken cancellationToken)
     {
-        await _billingService.ProcessPaymentResultAsync(request.PaymentReference, request.Status, request.Channel, request.Authorization);
+        await _billingService.ProcessPaymentResultAsync(request.PaymentReference, request.EventId, request.Status, request.Channel, request.Email, request.Authorization);
     }
 }

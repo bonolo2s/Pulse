@@ -8,7 +8,7 @@
 
     public class PaystackWebhookData
     {
-        public long Id { get; set; }
+        public long Id { get; set; }//Event Id
         public string Status { get; set; } = string.Empty;
         public string Reference { get; set; } = string.Empty;//from chcekout in remains same for same payment attempt
         public int Amount { get; set; }

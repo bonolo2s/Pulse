@@ -186,7 +186,13 @@ public static class BillingEndpoints
                 {
                     PropertyNameCaseInsensitive = true
                 });
-                await mediator.Send(new ProcessPaymentResultCommand(payload!.Data.Reference, payload.Data.Status, payload.Data.Channel, payload.Data.Authorization));
+                await mediator.Send(new ProcessPaymentResultCommand(
+                    payload!.Data.Reference,
+                    payload.Data.Id.ToString(),
+                    payload.Data.Status,
+                    payload.Data.Channel,
+                    payload.Data.Customer.Email,
+                    payload.Data.Authorization));
             }
             else if (eventName == "subscription.create")
             {

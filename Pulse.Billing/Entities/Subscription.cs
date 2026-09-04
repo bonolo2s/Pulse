@@ -6,7 +6,7 @@ public class Subscription
 {
     public Guid Id { get; set; } //internal use by my DB
     public Guid UserId { get; set; }
-    public string? EmailToken { get; set; } // required alongside PaystackSubscriptionCode for the disable-subscription call
+    public string? EmailToken { get; set; } // required alongside PaystackSubscriptionCode for the disable-subscription call.
     public string? PaystackCustomerCode { get; set; } // Paystack's fixed customer ID, used to match webhook events back to this row
     public SubscriptionPlan Plan { get; set; } // Free | Pro
 

@@ -14,20 +14,23 @@ public class BillingService : IBillingService, IBillingValidator
     private readonly IBillingEventWriter _eventWriter;
     private readonly IPaymentMethodService _paymentMethodService;
     private readonly ISubscriptionService _subscriptionService;
+    private readonly IUserLookupService _userLookupService;
     public BillingService(BillingDbContext context,
         IBillingEventWriter eventWriter,
         IPaymentMethodService paymentMethodService,
-        ISubscriptionService subscriptionService)
+        ISubscriptionService subscriptionService,
+        IUserLookupService userLookupService)
     {
         _context = context;
         _eventWriter = eventWriter;
         _paymentMethodService = paymentMethodService;
         _subscriptionService = subscriptionService;
+        _userLookupService = userLookupService;
     }
 
-    public async Task ProcessPaymentResultAsync(string paymentReference, string status, string? channel, PaystackAuthorization? authorization) //**
+    public async Task ProcessPaymentResultAsync(string paymentReference, string eventId, string status, string? channel, string email, PaystackAuthorization? authorization)
     {
-        var alreadyProcessed = await _eventWriter.HasProcessedEventAsync(paymentReference);
+        var alreadyProcessed = await _eventWriter.HasProcessedEventAsync(eventId); // coz same payment refernce can fire twice on two sep events
         if (alreadyProcessed)
         {
             await _eventWriter.LogEventAsync(
@@ -35,18 +38,19 @@ public class BillingService : IBillingService, IBillingValidator
                 source: BillingEventSource.Webhook,
                 paymentId: null,
                 userId: null,
-                paystackEventId: paymentReference,
+                paystackEventId: eventId,
                 payload: null,
                 previousStatus: null,
                 newStatus: null);
             return;
         }
 
-        var payment = await _context.Payments
-            .FirstOrDefaultAsync(p => p.ProviderReference == paymentReference)
-            ?? throw new KeyNotFoundException($"Payment with reference {paymentReference} not found.");
+        var userId = await _userLookupService.GetUserIdByEmailAsync(email)
+            ?? throw new KeyNotFoundException($"User with email {email} not found.");
 
-        // TODO: idempotency check — look up BillingEvent by PaystackEventId, skip if already Processed
+        var subscription = await _context.Subscriptions
+            .FirstOrDefaultAsync(s => s.UserId == userId && s.IsActive)
+            ?? throw new KeyNotFoundException($"Subscription for user {userId} not found.");
 
         var parsedStatus = status.ToLowerInvariant() switch
         {
@@ -56,32 +60,58 @@ public class BillingService : IBillingService, IBillingValidator
             _ => throw new InvalidOperationException($"Unrecognized payment status: {status}")
         };
 
-        var previousStatus = payment.Status.ToString();
-
-        payment.Status = parsedStatus;
-        payment.CompletedAt = DateTime.UtcNow;
-
         var invoice = await _context.Invoices
-            .FirstOrDefaultAsync(i => i.Id == payment.InvoiceId)
-            ?? throw new KeyNotFoundException($"Invoice {payment.InvoiceId} not found.");
+            .Where(i => i.SubscriptionId == subscription.Id && !_context.Payments.Any(p => p.InvoiceId == i.Id))
+            .OrderByDescending(i => i.IssuedAt)
+            .FirstOrDefaultAsync();
+
+        bool isFirstPayment = invoice == null;
+
+        if (isFirstPayment)
+        {
+            invoice = new Invoice
+            {
+                Id = Guid.NewGuid(),
+                UserId = subscription.UserId,
+                SubscriptionId = subscription.Id,
+                Amount = subscription.MonthlyPrice,
+                Currency = "ZAR",
+                Status = parsedStatus == PaymentStatus.Successful ? InvoiceStatus.Success : InvoiceStatus.Failed,
+                Type = InvoiceType.Initial,
+                IssuedAt = DateTime.UtcNow,
+                PaidAt = parsedStatus == PaymentStatus.Successful ? DateTime.UtcNow : null
+            };
+            _context.Invoices.Add(invoice);
+        }
+
+        var payment = new Payment
+        {
+            Id = Guid.NewGuid(),
+            UserId = subscription.UserId,
+            InvoiceId = invoice!.Id,
+            Amount = invoice.Amount,
+            ProviderReference = paymentReference,
+            Status = parsedStatus,
+            CompletedAt = DateTime.UtcNow
+        };
+        _context.Payments.Add(payment);
 
         if (parsedStatus == PaymentStatus.Successful)
         {
-            invoice.Status = InvoiceStatus.Success; 
-            invoice.PaidAt = DateTime.UtcNow;
-
-            var subscription = await _context.Subscriptions
-                .FirstOrDefaultAsync(s => s.Id == invoice.SubscriptionId)
-                ?? throw new KeyNotFoundException($"Subscription {invoice.SubscriptionId} not found.");
-
-            subscription.Plan = SubscriptionPlan.Pro;
-            subscription.ExpiresAt = DateTime.UtcNow.AddMonths(1);
-
+            if (!isFirstPayment)
+            {
+                subscription.ExpiresAt = DateTime.UtcNow.AddMonths(1);
+            }
+            if (isFirstPayment)
+            {
+                subscription.Plan = SubscriptionPlan.Pro;
+                subscription.ExpiresAt = DateTime.UtcNow.AddMonths(1);
+            }
             if (authorization != null && authorization.Reusable)
             {
                 var paymentMethod = new PaymentMethod
                 {
-                    UserId = payment.UserId,
+                    UserId = subscription.UserId,
                     Type = channel == "card" ? PaymentMethodType.Card : PaymentMethodType.Eft,
                     AuthorizationCode = authorization.AuthorizationCode
                 };
@@ -101,9 +131,7 @@ public class BillingService : IBillingService, IBillingValidator
                 await _paymentMethodService.SavePaymentMethodAsync(paymentMethod);
             }
         }
-
-        //marks them for gracePeriod.
-        else if (parsedStatus == PaymentStatus.Failed && invoice.Type == InvoiceType.Renewal)
+        else if (parsedStatus == PaymentStatus.Failed && !isFirstPayment)
         {
             await _subscriptionService.HandleFailedRenewalAsync(invoice.SubscriptionId);
         }
@@ -114,10 +142,10 @@ public class BillingService : IBillingService, IBillingValidator
             eventType: parsedStatus == PaymentStatus.Successful ? BillingEventType.PaymentSuccessful : BillingEventType.PaymentFailed,
             source: BillingEventSource.Webhook,
             paymentId: payment.Id,
-            userId: payment.UserId,
-            paystackEventId: paymentReference,
+            userId: subscription.UserId,
+            paystackEventId: eventId,
             payload: null,
-            previousStatus: previousStatus,
+            previousStatus: null,
             newStatus: parsedStatus.ToString());
     }
 
