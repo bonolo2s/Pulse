@@ -82,7 +82,19 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
             .FirstOrDefaultAsync(s => s.UserId == userId && s.IsActive)
             ?? throw new KeyNotFoundException($"Subscription for user {userId} not found.");
 
-        // TODO: call IPaymentProvider.DisableSubscription to stop future Paystack billing
+        if (string.IsNullOrEmpty(subscription.PaystackSubscriptionCode) || string.IsNullOrEmpty(subscription.EmailToken))
+        {
+            throw new InvalidOperationException($"Subscription for user {userId} is missing Paystack identifiers required to cancel.");
+        }
+
+        var result = await _paymentProvider.DisableSubscription(new DisableSubscriptionRequest(
+            subscription.PaystackSubscriptionCode,
+            subscription.EmailToken));
+
+        if (!result.Success)
+        {
+            throw new InvalidOperationException($"Paystack failed to disable subscription {subscription.PaystackSubscriptionCode}: {result.Message}");
+        }
 
         subscription.CancelAtPeriodEnd = true;
         await _context.SaveChangesAsync();
