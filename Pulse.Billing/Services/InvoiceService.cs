@@ -15,19 +15,11 @@ public class InvoiceService : IInvoiceService
         _context = context;
     }
 
-    public async Task CreateInvoiceFromWebhookAsync(string subscriptionCode, string invoiceCode, int amount, string currency, string status, bool paid, DateTime? paidAt)
+    public async Task CreateInvoiceFromWebhookAsync(string subscriptionCode, string invoiceCode, int amount, string currency)
     {
         var subscription = await _context.Subscriptions
             .FirstOrDefaultAsync(s => s.PaystackSubscriptionCode == subscriptionCode)
             ?? throw new KeyNotFoundException($"Subscription with code {subscriptionCode} not found.");
-
-        var parsedStatus = status.ToLowerInvariant() switch
-        {
-            "success" => InvoiceStatus.Success,
-            "attention" => InvoiceStatus.Attention,
-            "failed" => InvoiceStatus.Failed,
-            _ => InvoiceStatus.Unknown
-        };
 
         var invoice = new Invoice
         {
@@ -36,11 +28,10 @@ public class InvoiceService : IInvoiceService
             SubscriptionId = subscription.Id,
             Amount = amount / 100m,
             Currency = currency,
-            Status = parsedStatus,
+            Status = InvoiceStatus.Attention,
             Type = InvoiceType.Renewal,
             InvoiceCode = invoiceCode,
-            IssuedAt = DateTime.UtcNow,
-            PaidAt = paidAt
+            IssuedAt = DateTime.UtcNow
         };
 
         _context.Invoices.Add(invoice);
