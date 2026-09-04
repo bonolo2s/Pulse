@@ -212,7 +212,8 @@ public static class BillingEndpoints
                     payload!.Data.Subscription.SubscriptionCode,
                     payload.Data.InvoiceCode,
                     payload.Data.Amount,
-                    payload.Data.Transaction.Currency));
+                    payload.Data.Transaction.Currency,
+                    payload.Data.Subscription.EmailToken));
             }
             else if (eventName == "invoice.update")
             {

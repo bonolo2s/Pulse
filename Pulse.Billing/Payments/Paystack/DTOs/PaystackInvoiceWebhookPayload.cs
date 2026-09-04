@@ -21,6 +21,7 @@ public class PaystackInvoiceWebhookData
 public class PaystackInvoiceSubscriptionRef
 {
     public string SubscriptionCode { get; set; } = string.Empty;
+    public string EmailToken { get; set; } = string.Empty;
 }
 
 public class PaystackInvoiceTransactionRef

@@ -15,11 +15,16 @@ public class InvoiceService : IInvoiceService
         _context = context;
     }
 
-    public async Task CreateInvoiceFromWebhookAsync(string subscriptionCode, string invoiceCode, int amount, string currency)
+    public async Task CreateInvoiceFromWebhookAsync(string subscriptionCode, string invoiceCode, int amount, string currency, string emailToken)
     {
         var subscription = await _context.Subscriptions
             .FirstOrDefaultAsync(s => s.PaystackSubscriptionCode == subscriptionCode)
             ?? throw new KeyNotFoundException($"Subscription with code {subscriptionCode} not found.");
+
+        if (string.IsNullOrEmpty(subscription.EmailToken) && !string.IsNullOrEmpty(emailToken))
+        {
+            subscription.EmailToken = emailToken;
+        }
 
         var invoice = new Invoice
         {

@@ -171,7 +171,7 @@ public class BillingService : IBillingService, IBillingValidator
             //Method = PaymentMethodType.Card,
             Provider = "Paystack",
             ProviderReference = providerReference,
-            CreatedAt = DateTime.UtcNow
+            //CreatedAt = DateTime.UtcNow
         };
 
         _context.Payments.Add(payment);
