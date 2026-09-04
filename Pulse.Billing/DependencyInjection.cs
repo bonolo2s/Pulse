@@ -32,6 +32,8 @@ public static class DependencyInjection
         services.AddHostedService<SubscriptionExpirySweepHostedService>();
         services.AddScoped<ISubscriptionRenewalSweepService, SubscriptionRenewalSweepService>();
         services.AddHostedService<SubscriptionRenewalSweepHostedService>();
+        services.AddScoped<IExpiringCardCheckService, ExpiringCardCheckService>();
+        services.AddHostedService<ExpiringCardCheckHostedService>();
 
         return services;
     }

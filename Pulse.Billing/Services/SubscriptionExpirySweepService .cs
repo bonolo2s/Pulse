@@ -13,6 +13,6 @@ public class SubscriptionExpirySweepService : ISubscriptionExpirySweepService
 
     public async Task SweepAsync(CancellationToken cancellationToken)
     {
-        await _subscriptionService.ProcessExpiredSubscriptionsAsync();
+        //await _subscriptionService.ProcessExpiredSubscriptionsAsync();
     }
 }
