@@ -5,7 +5,5 @@ using System.Text;
 using System.Threading.Tasks;
 namespace Pulse.Billing.Payments.Paystack.DTOs
 {
-    public record DisableSubscriptionResult(
-        bool Success
-    );
+    public record DisableSubscriptionResult(bool Success, string Message);
 }

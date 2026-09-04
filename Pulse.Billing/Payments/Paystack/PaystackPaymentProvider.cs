@@ -41,6 +41,24 @@ public class PaystackPaymentProvider : IPaymentProvider
         );
     }
 
+    public async Task<DisableSubscriptionResult> DisableSubscription(DisableSubscriptionRequest request)
+    {
+        var payload = new
+        {
+            code = request.SubscriptionCode,
+            token = request.EmailToken
+        };
+
+        var response = await _httpClient.PostAsJsonAsync("subscription/disable", payload);
+        response.EnsureSuccessStatusCode();
+
+        var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+        return new DisableSubscriptionResult(
+            json.GetProperty("status").GetBoolean(),
+            json.GetProperty("message").GetString()!
+        );
+    }
+
     public async Task<InitializeTransactionResult> InitializeTransaction(InitializeTransactionRequest request)
     {
         var payload = new

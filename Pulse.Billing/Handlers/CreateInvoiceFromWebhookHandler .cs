@@ -19,6 +19,7 @@ public class CreateInvoiceFromWebhookHandler : IRequestHandler<CreateInvoiceFrom
             request.SubscriptionCode,
             request.InvoiceCode,
             request.Amount,
-            request.Currency);
+            request.Currency,
+            request.EmailToken);
     }
 }
