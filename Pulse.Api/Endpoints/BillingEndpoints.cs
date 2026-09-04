@@ -226,6 +226,27 @@ public static class BillingEndpoints
                     payload.Data.Status,
                     payload.Data.Paid));
             }
+            else if (eventName == "subscription.not_renew")
+            {
+                await eventWriter.LogEventAsync(
+                    eventType: BillingEventType.SubscriptionDisable, // no dedicated NotRenew value yet — flag below
+                    source: BillingEventSource.Webhook,
+                    paymentId: null,
+                    userId: null,
+                    paystackEventId: null,
+                    payload: rawBody,
+                    previousStatus: null,
+                    newStatus: null);
+            }
+            else if (eventName == "subscription.disable")
+            {
+                var payload = JsonSerializer.Deserialize<PaystackSubscriptionStatusWebhookPayload>(rawBody, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                await mediator.Send(new DowngradeSubscriptionCommand(payload!.Data.SubscriptionCode));
+            }
+
 
             return Results.NoContent(); ;
         })

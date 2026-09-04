@@ -107,28 +107,28 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
             ?? throw new KeyNotFoundException($"Subscription for user {userId} not found.");
     }
 
-    public async Task ProcessExpiredSubscriptionsAsync()
-    {
-        var buffer = TimeSpan.FromHours(_configuration.GetValue<int>("Billing:StuckRenewalBufferHours", 24));
+    //public async Task ProcessExpiredSubscriptionsAsync()
+    //{
+    //    var buffer = TimeSpan.FromHours(_configuration.GetValue<int>("Billing:StuckRenewalBufferHours", 24));
 
-        var expiredSubscriptions = await _context.Subscriptions
-            .Where(s => s.IsActive && s.Plan == SubscriptionPlan.Pro && s.ExpiresAt != null && (
-                (s.CancelAtPeriodEnd && s.ExpiresAt <= DateTime.UtcNow) || // user cancelled, period ended
-                (s.GracePeriodEndsAt != null && s.GracePeriodEndsAt <= DateTime.UtcNow) || // grace period ran out for failed subscriptions.
-                (s.GracePeriodEndsAt == null && !s.CancelAtPeriodEnd && s.ExpiresAt <= DateTime.UtcNow - buffer) // renewal never resolved them, verify fallback likely down
-            ))
-            .ToListAsync();
+    //    var expiredSubscriptions = await _context.Subscriptions
+    //        .Where(s => s.IsActive && s.Plan == SubscriptionPlan.Pro && s.ExpiresAt != null && (
+    //            (s.CancelAtPeriodEnd && s.ExpiresAt <= DateTime.UtcNow) || // user cancelled, period ended
+    //            (s.GracePeriodEndsAt != null && s.GracePeriodEndsAt <= DateTime.UtcNow) || // grace period ran out for failed subscriptions.
+    //            (s.GracePeriodEndsAt == null && !s.CancelAtPeriodEnd && s.ExpiresAt <= DateTime.UtcNow - buffer) // renewal never resolved them, verify fallback likely down
+    //        ))
+    //        .ToListAsync();
 
-        foreach (var subscription in expiredSubscriptions)
-        {
-            subscription.Plan = SubscriptionPlan.Free;
-            subscription.ExpiresAt = null;
-            subscription.CancelAtPeriodEnd = false;
-            subscription.GracePeriodEndsAt = null;
-        }
+    //    foreach (var subscription in expiredSubscriptions)
+    //    {
+    //        subscription.Plan = SubscriptionPlan.Free;
+    //        subscription.ExpiresAt = null;
+    //        subscription.CancelAtPeriodEnd = false;
+    //        subscription.GracePeriodEndsAt = null;
+    //    }
 
-        await _context.SaveChangesAsync();
-    }
+    //    await _context.SaveChangesAsync();
+    //}
 
     public async Task<Subscription> GetSubscriptionForRenewalAsync(Guid subscriptionId)
     {
@@ -175,6 +175,19 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
         subscription.PaystackSubscriptionCode = subscriptionCode;
         subscription.EmailToken = emailToken;
         subscription.PaystackCustomerCode = customerCode;
+
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task DowngradeSubscriptionFromWebhookAsync(string subscriptionCode)
+    {
+        var subscription = await _context.Subscriptions
+            .FirstOrDefaultAsync(s => s.PaystackSubscriptionCode == subscriptionCode)
+            ?? throw new KeyNotFoundException($"Subscription with code {subscriptionCode} not found.");
+
+        subscription.Plan = SubscriptionPlan.Free;
+        subscription.ExpiresAt = null;
+        subscription.CancelAtPeriodEnd = false;
 
         await _context.SaveChangesAsync();
     }
