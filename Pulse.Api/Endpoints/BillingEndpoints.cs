@@ -19,6 +19,9 @@ public static class BillingEndpoints
     {
         var group = app.MapGroup("/api/billing");
 
+        // Subscription endpoints
+        // ----------------------
+
         group.MapPost("/create-subscription/{userId:guid}", async (Guid userId, IMediator mediator) =>
         {
             var subscription = new Subscription { UserId = userId };
@@ -106,6 +109,9 @@ public static class BillingEndpoints
         .WithOpenApi()
         .RequireAuthorization();
 
+        // Invoice endpoints
+        // -----------------
+
         group.MapGet("/get-invoices/{userId:guid}", async (Guid userId, IMediator mediator) =>
         {
             var results = await mediator.Send(new GetBillingHistoryQuery(userId));
@@ -130,6 +136,9 @@ public static class BillingEndpoints
         .WithOpenApi()
         .RequireAuthorization();
 
+        // Checkout endpoint
+        // -----------------
+
         group.MapPost("/checkout", async (ClaimsPrincipal user, IMediator mediator) =>
         {
             var userId = Guid.Parse(user.FindFirstValue(ClaimTypes.NameIdentifier)!);
@@ -147,6 +156,9 @@ public static class BillingEndpoints
         .WithOpenApi()
         .RequireAuthorization();
 
+        // Webhook endpoint
+        // ----------------
+
         group.MapPost("/webhooks/payment", async (HttpRequest request, IMediator mediator, IConfiguration configuration, IBillingEventWriter eventWriter) =>
         {
             request.EnableBuffering();
@@ -161,7 +173,7 @@ public static class BillingEndpoints
             var ipOk = PaystackWebhookValidator.IsIpWhitelisted(remoteIp);
             var signatureOk = PaystackWebhookValidator.IsSignatureValid(rawBody, signatureHeader, secretKey);
 
-            if (!ipOk && !signatureOk)
+            if (!ipOk || !signatureOk)
             {
                 await eventWriter.LogEventAsync(
                     eventType: BillingEventType.WebhookRejected,
@@ -273,6 +285,9 @@ public static class BillingEndpoints
         .WithName("SyncPaymentWebhook")
         .WithTags("Billing")
         .WithOpenApi();
+
+        // PaymentMethods endpoints
+        // ------------------------
 
         group.MapGet("/get-payment-methods/{userId:guid}", async (Guid userId, IMediator mediator) =>
         {
