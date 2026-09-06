@@ -22,6 +22,7 @@ public enum BillingEventType
     SubscriptionCreate,
     SubscriptionNotRenew,
     SubscriptionExpiringCards,
+    SubscriptionCancellationRequested,
 
     InvoiceCreate,
     InvoiceUpdate,

@@ -17,17 +17,20 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
     private readonly IPaymentProvider _paymentProvider;
     private readonly IUserLookupService _userLookup;
     private readonly IConfiguration _configuration;
+    private readonly IBillingEventWriter _eventWriter;
 
 
     public SubscriptionService(BillingDbContext context,
         IPaymentProvider paymentProvider,
         IConfiguration configuration,
-        IUserLookupService userLookup)
+        IUserLookupService userLookup,
+        IBillingEventWriter eventWriter)
     {
         _context = context;
         _paymentProvider = paymentProvider;
         _configuration = configuration;
         _userLookup = userLookup;
+        _eventWriter = eventWriter;
     }
 
     public async Task<Subscription> CreateSubscriptionAsync(Subscription subscription) // Not a conflict .Admin might need it 
@@ -98,6 +101,17 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
 
         subscription.CancelAtPeriodEnd = true;
         await _context.SaveChangesAsync();
+
+        await _eventWriter.LogEventAsync(
+            eventType: BillingEventType.SubscriptionDisable,
+            source: BillingEventSource.Client,
+            paymentId: null,
+            userId: userId,
+            paystackEventId: null,
+            payload: null,
+            previousStatus: null,
+            newStatus: "CancelAtPeriodEnd");
+
     }
 
     public async Task<Subscription> GetSubscriptionAsync(Guid userId)
