@@ -178,7 +178,7 @@ public static class BillingEndpoints
                 await eventWriter.LogEventAsync(
                     eventType: BillingEventType.WebhookRejected,
                     source: BillingEventSource.Webhook,
-                    paymentId: null,
+                    paymentId: null,//
                     userId: null,
                     paystackEventId: null,
                     payload: rawBody,

@@ -10,15 +10,14 @@ namespace Pulse.Billing.Interfaces
     public interface IBillingEventWriter
     {
         Task LogEventAsync(
-            BillingEventType eventType,
-            BillingEventSource source,
-            Guid? paymentId,
-            Guid? userId,
-            string? paystackEventId,
-            string? payload,
-            string? previousStatus,
-            string? newStatus,
-            bool? processed = null);
+        BillingEventType eventType,
+        BillingEventSource source,
+        Guid? userId,
+        string? paystackEventId,
+        string? paymentReference,
+        string? payload,
+        BillingEventType? previousStatus,
+        BillingEventType? newStatus);
 
         Task<bool> HasProcessedEventAsync(string paystackEventId);
     }

@@ -17,27 +17,25 @@ public class BillingEventWriter : IBillingEventWriter
     public async Task LogEventAsync(
         BillingEventType eventType,
         BillingEventSource source,
-        Guid? paymentId,
         Guid? userId,
         string? paystackEventId,
+        string? paymentReference,
         string? payload,
-        string? previousStatus,
-        string? newStatus,
-        bool? processed = null)
+        BillingEventType? previousStatus,
+        BillingEventType? newStatus)
     {
         var billingEvent = new BillingEvent
         {
             Id = Guid.NewGuid(),
             EventType = eventType,
             Source = source,
-            PaymentId = paymentId,
             UserId = userId,
             PaystackEventId = paystackEventId,
+            PaymentReference = paymentReference,
             Payload = payload,
             PreviousStatus = previousStatus,
             NewStatus = newStatus,
-            ReceivedAt = DateTime.UtcNow,
-            Processed = RequiresProcessing(eventType) ? false : null
+            ReceivedAt = DateTime.UtcNow
         };
 
         _context.BillingEvents.Add(billingEvent);
@@ -49,14 +47,15 @@ public class BillingEventWriter : IBillingEventWriter
         return await _context.BillingEvents
             .AnyAsync(e => e.PaystackEventId == paystackEventId);
     }
-    private static bool RequiresProcessing(BillingEventType eventType) => eventType switch //Future background sweep for makesure disputes
-    {
-        BillingEventType.PaymentSuccessful => true,
-        BillingEventType.PaymentFailed => true,
-        BillingEventType.ChargeSuccess => true,
-        BillingEventType.ChargeFailed => true,
-        BillingEventType.SubscriptionEnable => true,
-        BillingEventType.SubscriptionDisable => true,
-        _ => false
-    };
+    //private static bool RequiresProcessing(BillingEventType eventType) => eventType switch //sweeper will mark those that require processing in memomery
+    //                                                                                       //e.g like pending too long
+    //{
+    //    BillingEventType.PaymentSuccessful => true,
+    //    BillingEventType.PaymentFailed => true,
+    //    BillingEventType.ChargeSuccess => true,
+    //    BillingEventType.ChargeFailed => true,
+    //    BillingEventType.SubscriptionEnable => true,
+    //    BillingEventType.SubscriptionDisable => true,
+    //    _ => false
+    //};
 }

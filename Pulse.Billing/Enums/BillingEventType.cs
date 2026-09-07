@@ -2,17 +2,25 @@
 
 public enum BillingEventType
 {
-    PaymentInitiated,
-    PaymentPending,
-    PaymentProviderReferenceCreated,
-    PaymentProcessing,
-    PaymentSuccessful,
-    PaymentFailed,
+    // State Driven Events
+    // --------------------
+    PaymentInitiated,// reference obtained from Paystack
+    PaymentPending,// waiting on webhook
+    //PaymentProviderReferenceCreated,
+    PaymentProcessing,// webhook arrived n is beieng processed.
+    PaymentSuccessful,// charge.success, verified
+    PaymentFailed,// charge.success payload status = "failed"
 
-    WebhookRejected,           // failed signature/IP check — security-relevant, currently silently 401
+    InitiationFailed,     // never got a reference — dead before Pending
+
     DuplicateEventReceived,
-    PaymentVerificationTimeout,// Pending too long, no webhook arrived, triggers fallback verify
+    VerificationTimeout, // no webhook arrived in time, fallback triggered
     PaymentVerificationFallback,// BE polled Paystack directly to resolve a stuck Pending**
+
+
+    // Webhook event-triggers
+    // ----------------------
+    WebhookRejected,           // failed signature/IP check — security-relevant, currently silently 401
 
     ChargeSuccess,
     ChargeFailed,

@@ -54,17 +54,34 @@ public class InitiateCheckoutHandler : IRequestHandler<InitiateCheckoutCommand, 
             planCode
         );
 
-        var result = await _paymentProvider.InitializeTransaction(paystackRequest);
+        InitializeTransactionResult result;
+        try
+        {
+            result = await _paymentProvider.InitializeTransaction(paystackRequest);
+        }
+        catch (Exception ex)
+        {
+            await _eventWriter.LogEventAsync(
+                eventType: BillingEventType.InitiationFailed,
+                source: BillingEventSource.Client,
+                userId: request.UserId,
+                paystackEventId: null,
+                paymentReference: null,
+                payload: ex.Message,
+                previousStatus: null,
+                newStatus: BillingEventType.InitiationFailed);
+            throw;
+        }
 
         await _eventWriter.LogEventAsync(
             eventType: BillingEventType.PaymentInitiated,
             source: BillingEventSource.Client,
-            paymentId: null,
             userId: request.UserId,
-            paystackEventId: result.Reference,
+            paystackEventId: null,
+            paymentReference: result.Reference,
             payload: null,
             previousStatus: null,
-            newStatus: null);
+            newStatus: BillingEventType.PaymentInitiated);
 
         return result;
     }
