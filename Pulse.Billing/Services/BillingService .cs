@@ -30,15 +30,15 @@ public class BillingService : IBillingService, IBillingValidator
 
     public async Task ProcessPaymentResultAsync(string paymentReference, string eventId, string status, string? channel, string email, PaystackAuthorization? authorization)
     {
-        var alreadyProcessed = await _eventWriter.HasProcessedEventAsync(eventId); // coz same payment refernce can fire twice on two sep events
+        var alreadyProcessed = await _eventWriter.HasProcessedEventAsync(eventId); // coz same payment refernce can fire twice on two sep events.
         if (alreadyProcessed)
         {
             await _eventWriter.LogEventAsync(
                 eventType: BillingEventType.DuplicateEventReceived,
                 source: BillingEventSource.Webhook,
-                paymentId: null,
                 userId: null,
                 paystackEventId: eventId,
+                paymentReference: paymentReference,
                 payload: null,
                 previousStatus: null,
                 newStatus: null);
@@ -59,6 +59,21 @@ public class BillingService : IBillingService, IBillingValidator
             "pending" or "processing" => PaymentStatus.Processing,
             _ => throw new InvalidOperationException($"Unrecognized payment status: {status}")
         };
+
+        var newEventType = parsedStatus switch
+        {
+            PaymentStatus.Successful => BillingEventType.PaymentSuccessful,
+            PaymentStatus.Failed => BillingEventType.PaymentFailed,
+            PaymentStatus.Processing => BillingEventType.PaymentProcessing,
+            _ => BillingEventType.Unknown
+        };
+
+        var lastEvent = await _context.BillingEvents
+            .Where(e => e.PaymentReference == paymentReference)
+            .OrderByDescending(e => e.ReceivedAt)
+            .FirstOrDefaultAsync();
+
+        var previousStatus = lastEvent?.NewStatus;
 
         var invoice = await _context.Invoices
             .Where(i => i.SubscriptionId == subscription.Id && !_context.Payments.Any(p => p.InvoiceId == i.Id))
@@ -106,7 +121,7 @@ public class BillingService : IBillingService, IBillingValidator
             {
                 subscription.Plan = SubscriptionPlan.Pro;
                 subscription.ExpiresAt = DateTime.UtcNow.AddMonths(1);
-            }
+            }d
             if (authorization != null && authorization.Reusable)
             {
                 var paymentMethod = new PaymentMethod
@@ -139,14 +154,14 @@ public class BillingService : IBillingService, IBillingValidator
         await _context.SaveChangesAsync();
 
         await _eventWriter.LogEventAsync(
-            eventType: parsedStatus == PaymentStatus.Successful ? BillingEventType.PaymentSuccessful : BillingEventType.PaymentFailed,
+            eventType: newEventType,
             source: BillingEventSource.Webhook,
-            paymentId: payment.Id,
             userId: subscription.UserId,
             paystackEventId: eventId,
+            paymentReference: paymentReference,
             payload: null,
-            previousStatus: null,
-            newStatus: parsedStatus.ToString());
+            previousStatus: previousStatus,
+            newStatus: newEventType);
     }
 
     public async Task ValidateEndpointLimitAsync(Guid userId, int currentEndpointCount)

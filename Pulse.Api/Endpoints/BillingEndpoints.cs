@@ -178,21 +178,34 @@ public static class BillingEndpoints
                 await eventWriter.LogEventAsync(
                     eventType: BillingEventType.WebhookRejected,
                     source: BillingEventSource.Webhook,
-                    paymentId: null,//
                     userId: null,
                     paystackEventId: null,
+                    paymentReference: null,
                     payload: rawBody,
                     previousStatus: null,
                     newStatus: null);
 
                 return Results.Unauthorized();
-                //theres a silennt bug...on BE doesnt upfare but UI says success
             }
 
             var eventPeek = JsonSerializer.Deserialize<JsonElement>(rawBody);
             var eventName = eventPeek.GetProperty("event").GetString();
 
             if (eventName == "charge.success")
+            {
+                var payload = JsonSerializer.Deserialize<PaystackWebhookPayload>(rawBody, new JsonSerializerOptions
+                {
+                    PropertyNameCaseInsensitive = true
+                });
+                await mediator.Send(new ProcessPaymentResultCommand(
+                    payload!.Data.Reference,
+                    payload.Data.Id.ToString(),
+                    payload.Data.Status,
+                    payload.Data.Channel,
+                    payload.Data.Customer.Email,
+                    payload.Data.Authorization));
+            }
+            else if (eventName == "charge.failed")
             {
                 var payload = JsonSerializer.Deserialize<PaystackWebhookPayload>(rawBody, new JsonSerializerOptions
                 {
@@ -250,7 +263,7 @@ public static class BillingEndpoints
                 await eventWriter.LogEventAsync(
                     eventType: BillingEventType.SubscriptionNotRenew,
                     source: BillingEventSource.Webhook,
-                    paymentId: null,
+                    paymentReference: null,
                     userId: subscription?.UserId,
                     paystackEventId: null,
                     payload: rawBody,
@@ -271,12 +284,12 @@ public static class BillingEndpoints
                 await eventWriter.LogEventAsync(
                     eventType: BillingEventType.SubscriptionDisable,
                     source: BillingEventSource.Webhook,
-                    paymentId: null,
+                    paymentReference: null,
                     userId: subscription?.UserId,
                     paystackEventId: null,
                     payload: rawBody,
                     previousStatus: null,
-                    newStatus: "Free");
+                    newStatus: null);
             }
 
 

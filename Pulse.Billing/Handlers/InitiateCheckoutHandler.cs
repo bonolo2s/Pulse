@@ -69,7 +69,7 @@ public class InitiateCheckoutHandler : IRequestHandler<InitiateCheckoutCommand, 
                 paymentReference: null,
                 payload: ex.Message,
                 previousStatus: null,
-                newStatus: BillingEventType.InitiationFailed);
+                newStatus: null); //never transitioned
             throw;
         }
 
@@ -81,7 +81,7 @@ public class InitiateCheckoutHandler : IRequestHandler<InitiateCheckoutCommand, 
             paymentReference: result.Reference,
             payload: null,
             previousStatus: null,
-            newStatus: BillingEventType.PaymentInitiated);
+            newStatus: BillingEventType.PaymentInitiated); // i track whats transition not stand alone facts
 
         return result;
     }
