@@ -56,7 +56,7 @@ public class BillingService : IBillingService, IBillingValidator
         {
             "success" => PaymentStatus.Successful,
             "failed" => PaymentStatus.Failed,
-            "pending" or "processing" => PaymentStatus.Processing,
+            //"pending" or "processing" => PaymentStatus.Processing,
             _ => throw new InvalidOperationException($"Unrecognized payment status: {status}")
         };
 
@@ -64,7 +64,7 @@ public class BillingService : IBillingService, IBillingValidator
         {
             PaymentStatus.Successful => BillingEventType.PaymentSuccessful,
             PaymentStatus.Failed => BillingEventType.PaymentFailed,
-            PaymentStatus.Processing => BillingEventType.PaymentProcessing,
+            //PaymentStatus.Processing => BillingEventType.PaymentProcessing,
             _ => BillingEventType.Unknown
         };
 
@@ -121,7 +121,7 @@ public class BillingService : IBillingService, IBillingValidator
             {
                 subscription.Plan = SubscriptionPlan.Pro;
                 subscription.ExpiresAt = DateTime.UtcNow.AddMonths(1);
-            }d
+            }
             if (authorization != null && authorization.Reusable)
             {
                 var paymentMethod = new PaymentMethod
@@ -182,7 +182,7 @@ public class BillingService : IBillingService, IBillingValidator
             UserId = userId,
             InvoiceId = invoiceId,
             Amount = amount,
-            Status = PaymentStatus.Pending,
+            //Status = PaymentStatus.Pending,
             //Method = PaymentMethodType.Card,
             Provider = "Paystack",
             ProviderReference = providerReference,

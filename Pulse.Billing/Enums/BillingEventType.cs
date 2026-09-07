@@ -5,9 +5,9 @@ public enum BillingEventType
     // State Driven Events
     // --------------------
     PaymentInitiated,// reference obtained from Paystack
-    PaymentPending,// waiting on webhook
+    //PaymentPending,// waiting on webhook
     //PaymentProviderReferenceCreated,
-    PaymentProcessing,// webhook arrived n is beieng processed.
+    //PaymentProcessing,// webhook arrived n is beieng processed.
     PaymentSuccessful,// charge.success, verified
     PaymentFailed,// charge.success payload status = "failed"
 

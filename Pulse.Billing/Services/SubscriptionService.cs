@@ -159,18 +159,14 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
 
         if (subscription.GracePeriodEndsAt == null)
         {
-            // First failure — start grace period, keep them on Pro
             subscription.GracePeriodEndsAt = DateTime.UtcNow.AddDays(_configuration.GetValue<int>("Billing:GracePeriodDays", 3));
         }
         else if (subscription.GracePeriodEndsAt <= DateTime.UtcNow)
         {
-            // Grace period exhausted, still failing — downgrade
             subscription.Plan = SubscriptionPlan.Free;
             subscription.ExpiresAt = null;
             subscription.GracePeriodEndsAt = null;
         }
-
-        // else: still within grace, already tracked, nothing new to do — next sweep cycle will retry
 
         await _context.SaveChangesAsync();
     }
