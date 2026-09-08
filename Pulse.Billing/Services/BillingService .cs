@@ -135,6 +135,7 @@ public class BillingService : IBillingService, IBillingValidator
             UserId = subscription.UserId,
             InvoiceId = invoice!.Id,
             Amount = invoice.Amount,
+            Provider = "Paystack",
             ProviderReference = paymentReference,
             Status = parsedStatus,
             CompletedAt = DateTime.UtcNow
