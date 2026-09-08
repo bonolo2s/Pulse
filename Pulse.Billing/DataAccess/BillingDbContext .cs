@@ -38,6 +38,7 @@ public class BillingDbContext : DbContext
             entity.Property(e => e.Amount).IsRequired().HasColumnType("decimal(18,2)");
             entity.Property(e => e.Currency).IsRequired().HasMaxLength(10);
             entity.Property(e => e.Status).IsRequired().HasConversion<string>();
+            entity.Property(e => e.Type).IsRequired().HasConversion<string>().HasMaxLength(20);
             entity.Property(e => e.IssuedAt).IsRequired();
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => e.SubscriptionId);
