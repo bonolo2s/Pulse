@@ -11,7 +11,9 @@ namespace Pulse.Billing.Payments.Paystack
         // Reserved for IP whitelisting
         private static readonly HashSet<string> AllowedIps = new()
         {
-            //
+            "52.214.14.220",
+            "52.49.173.169",
+            "52.31.139.75",
         };
 
         public static bool IsIpWhitelisted(string? remoteIp)
