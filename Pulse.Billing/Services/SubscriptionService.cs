@@ -102,15 +102,15 @@ public class SubscriptionService : ISubscriptionService, ISubscriptionCreator
         subscription.CancelAtPeriodEnd = true;
         await _context.SaveChangesAsync();
 
-        await _eventWriter.LogEventAsync(
-            eventType: BillingEventType.SubscriptionDisable,
-            source: BillingEventSource.Client,
-            paymentId: null,
-            userId: userId,
-            paystackEventId: null,
-            payload: null,
-            previousStatus: null,
-            newStatus: "CancelAtPeriodEnd");
+        //await _eventWriter.LogEventAsync(
+        //    eventType: BillingEventType.SubscriptionDisable,
+        //    source: BillingEventSource.Client,
+        //    //paymentId: null,
+        //    userId: userId,
+        //    paystackEventId: null,
+        //    payload: null,
+        //    previousStatus: null,
+        //    newStatus: "CancelAtPeriodEnd");
 
     }
 

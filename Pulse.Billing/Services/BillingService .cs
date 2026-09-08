@@ -28,28 +28,52 @@ public class BillingService : IBillingService, IBillingValidator
         _userLookupService = userLookupService;
     }
 
-    public async Task ProcessPaymentResultAsync(string paymentReference, string eventId, string status, string? channel, string email, PaystackAuthorization? authorization)
+    public async Task ProcessPaymentResultAsync(string paymentReference,
+        string? eventId,
+        string status,
+        string? channel,
+        string? email,
+        Guid? userId,
+        PaystackAuthorization? authorization)
     {
-        var alreadyProcessed = await _eventWriter.HasProcessedEventAsync(eventId); // coz same payment refernce can fire twice on two sep events.
-        if (alreadyProcessed)
+        if (eventId != null)
         {
-            await _eventWriter.LogEventAsync(
-                eventType: BillingEventType.DuplicateEventReceived,
-                source: BillingEventSource.Webhook,
-                userId: null,
-                paystackEventId: eventId,
-                paymentReference: paymentReference,
-                payload: null,
-                previousStatus: null,
-                newStatus: null);
-            return;
+            var alreadyProcessed = await _eventWriter.HasProcessedEventAsync(eventId); // coz same payment refernce can fire twice on two sep events.
+            if (alreadyProcessed)
+            {
+                await _eventWriter.LogEventAsync(
+                    eventType: BillingEventType.DuplicateEventReceived,
+                    source: BillingEventSource.Webhook,
+                    userId: null,
+                    paystackEventId: eventId,
+                    paymentReference: paymentReference,
+                    payload: null,
+                    previousStatus: null,
+                    newStatus: null);
+                return;
+            }
         }
 
-        var userId = await _userLookupService.GetUserIdByEmailAsync(email)
-            ?? throw new KeyNotFoundException($"User with email {email} not found.");
+        Guid resolvedUserId;
+        if (userId.HasValue)
+        {
+            resolvedUserId = userId.Value;
+        }
+        else if (email != null)
+        {
+            resolvedUserId = await _userLookupService.GetUserIdByEmailAsync(email)
+                ?? throw new KeyNotFoundException($"User with email {email} not found.");
+        }
+        else
+        {
+            throw new ArgumentException("Either email or userId must be provided.");
+        }
+
+        //var userId = await _userLookupService.GetUserIdByEmailAsync(email)
+        //    ?? throw new KeyNotFoundException($"User with email {email} not found.");
 
         var subscription = await _context.Subscriptions
-            .FirstOrDefaultAsync(s => s.UserId == userId && s.IsActive)
+            .FirstOrDefaultAsync(s => s.UserId == resolvedUserId && s.IsActive)
             ?? throw new KeyNotFoundException($"Subscription for user {userId} not found.");
 
         var parsedStatus = status.ToLowerInvariant() switch

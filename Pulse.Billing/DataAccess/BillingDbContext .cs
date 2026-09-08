@@ -43,10 +43,11 @@ public class BillingDbContext : DbContext
             entity.HasIndex(e => e.SubscriptionId);
         });
 
-        modelBuilder.Entity<BillingEvent>(entity =>
+        modelBuilder.Entity<BillingEvent>(entity => // what are indexing this with by ref
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.PaystackEventId).HasMaxLength(100);
+            entity.Property(e => e.PaymentReference).HasMaxLength(100);
             entity.Property(e => e.EventType)
                 .IsRequired()
                 .HasConversion<string>()
@@ -56,16 +57,19 @@ public class BillingDbContext : DbContext
             .HasConversion<string>()
             .HasMaxLength(20);
             entity.Property(e => e.Payload);
-            entity.Property(e => e.PreviousStatus).HasMaxLength(30);
-            entity.Property(e => e.NewStatus).HasMaxLength(30);
-            entity.Property(e => e.Processed);
+            //entity.Property(e => e.PreviousStatus).HasMaxLength(30);
+            //entity.Property(e => e.NewStatus).HasMaxLength(30);
+            //entity.Property(e => e.Processed);
             entity.Property(e => e.ReceivedAt).IsRequired();
-            entity.HasIndex(e => e.PaystackEventId).IsUnique();
+            entity.Property(e => e.PreviousStatus).HasConversion<string>().HasMaxLength(30);
+            entity.Property(e => e.NewStatus).HasConversion<string>().HasMaxLength(30);
+            //entity.HasIndex(e => e.PaystackEventId).IsUnique();
 
-            entity.HasOne(e => e.Payment)
-                .WithMany()
-                .HasForeignKey(e => e.PaymentId)
-                .OnDelete(DeleteBehavior.SetNull);
+            //entity.HasOne(e => e.Payment)
+            //    .WithMany()
+            //    .HasForeignKey(e => e.PaymentId)
+            //    .OnDelete(DeleteBehavior.SetNull);
+            entity.HasIndex(e => e.PaymentReference);
         });
 
         modelBuilder.Entity<Payment>(entity =>
@@ -75,7 +79,6 @@ public class BillingDbContext : DbContext
             entity.Property(e => e.Status).IsRequired().HasConversion<string>();
             entity.Property(e => e.Method).IsRequired().HasConversion<string>();
             entity.Property(e => e.Provider).IsRequired().HasMaxLength(50);
-            entity.Property(e => e.CreatedAt).IsRequired();
         });
 
         modelBuilder.Entity<PaymentMethod>(entity =>
