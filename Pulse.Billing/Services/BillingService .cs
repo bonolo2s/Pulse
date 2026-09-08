@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Pulse.Billing.DataAccess;
 using Pulse.Billing.Entities;
 using Pulse.Billing.Enums;
@@ -15,17 +16,21 @@ public class BillingService : IBillingService, IBillingValidator
     private readonly IPaymentMethodService _paymentMethodService;
     private readonly ISubscriptionService _subscriptionService;
     private readonly IUserLookupService _userLookupService;
+    private readonly decimal _proAmount;
+
     public BillingService(BillingDbContext context,
         IBillingEventWriter eventWriter,
         IPaymentMethodService paymentMethodService,
         ISubscriptionService subscriptionService,
-        IUserLookupService userLookupService)
+        IUserLookupService userLookupService,
+        IConfiguration configuration)
     {
         _context = context;
         _eventWriter = eventWriter;
         _paymentMethodService = paymentMethodService;
         _subscriptionService = subscriptionService;
         _userLookupService = userLookupService;
+        _proAmount = configuration.GetValue<decimal>("Paystack:Plans:Pro");
     }
 
     public async Task ProcessPaymentResultAsync(string paymentReference,
@@ -108,12 +113,13 @@ public class BillingService : IBillingService, IBillingValidator
 
         if (isFirstPayment)
         {
+
             invoice = new Invoice
             {
                 Id = Guid.NewGuid(),
                 UserId = subscription.UserId,
                 SubscriptionId = subscription.Id,
-                Amount = subscription.MonthlyPrice,
+                Amount = _proAmount,
                 Currency = "ZAR",
                 Status = parsedStatus == PaymentStatus.Successful ? InvoiceStatus.Success : InvoiceStatus.Failed,
                 Type = InvoiceType.Initial,
