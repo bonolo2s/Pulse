@@ -8,7 +8,7 @@ public interface ISubscriptionService
     Task<Subscription> UpgradeToProAsync(Guid userId);
     Task CancelSubscriptionAsync(Guid userId);
     Task<Subscription> GetSubscriptionAsync(Guid userId);
-    //Task ProcessExpiredSubscriptionsAsync();
+    Task ProcessExpiredSubscriptionsAsync();
     Task DowngradeSubscriptionFromWebhookAsync(string subscriptionCode);
     Task<Subscription> GetSubscriptionForRenewalAsync(Guid subscriptionId);
     Task<Subscription?> GetSubscriptionByCodeAsync(string subscriptionCode);

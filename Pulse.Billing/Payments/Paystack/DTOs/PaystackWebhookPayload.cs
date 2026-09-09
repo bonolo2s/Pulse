@@ -1,4 +1,6 @@
-﻿namespace Pulse.Billing.Payments.Paystack.DTOs
+﻿using System.Text.Json.Serialization;
+
+namespace Pulse.Billing.Payments.Paystack.DTOs
 {
     public class PaystackWebhookPayload
     {
@@ -15,23 +17,37 @@
         public string Currency { get; set; } = string.Empty;
         public string? Channel { get; set; } //card/bank
         public PaystackWebhookCustomer Customer { get; set; } = null!;
+
+        [JsonPropertyName("paid_at")]
         public DateTime? PaidAt { get; set; }
+
         public PaystackAuthorization? Authorization { get; set; }
     }
 
     public class PaystackWebhookCustomer
     {
         public string Email { get; set; } = string.Empty;
+
+        [JsonPropertyName("customer_code")]
         public string CustomerCode { get; set; } = string.Empty;
     }
 
     public class PaystackAuthorization //Paystacks reusable-charge object for both cards n Efts = PaymentMethod in gen
     {
+        [JsonPropertyName("authorization_code")]
         public string AuthorizationCode { get; set; } = string.Empty;
+
+        [JsonPropertyName("card_type")]
         public string CardType { get; set; } = string.Empty; // "visa", "mastercard" etc
+
         public string Last4 { get; set; } = string.Empty;
+
+        [JsonPropertyName("exp_month")]
         public string ExpMonth { get; set; } = string.Empty;
+
+        [JsonPropertyName("exp_year")]
         public string ExpYear { get; set; } = string.Empty;
+
         public string Bank { get; set; } = string.Empty;
         public bool Reusable { get; set; }
     }

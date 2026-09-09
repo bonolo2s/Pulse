@@ -74,9 +74,6 @@ public class BillingService : IBillingService, IBillingValidator
             throw new ArgumentException("Either email or userId must be provided.");
         }
 
-        //var userId = await _userLookupService.GetUserIdByEmailAsync(email)
-        //    ?? throw new KeyNotFoundException($"User with email {email} not found.");
-
         var subscription = await _context.Subscriptions
             .FirstOrDefaultAsync(s => s.UserId == resolvedUserId && s.IsActive)
             ?? throw new KeyNotFoundException($"Subscription for user {userId} not found.");
@@ -85,7 +82,6 @@ public class BillingService : IBillingService, IBillingValidator
         {
             "success" => PaymentStatus.Successful,
             "failed" => PaymentStatus.Failed,
-            //"pending" or "processing" => PaymentStatus.Processing,
             _ => throw new InvalidOperationException($"Unrecognized payment status: {status}")
         };
 
@@ -93,7 +89,6 @@ public class BillingService : IBillingService, IBillingValidator
         {
             PaymentStatus.Successful => BillingEventType.PaymentSuccessful,
             PaymentStatus.Failed => BillingEventType.PaymentFailed,
-            //PaymentStatus.Processing => BillingEventType.PaymentProcessing,
             _ => BillingEventType.Unknown
         };
 
