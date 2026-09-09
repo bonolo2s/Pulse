@@ -59,6 +59,27 @@ public class PaystackPaymentProvider : IPaymentProvider
         );
     }
 
+    public async Task<List<SubscriptionResult>> GetAllSubscriptions()
+    {
+        var response = await _httpClient.GetAsync("subscription");
+        response.EnsureSuccessStatusCode();
+        var json = await response.Content.ReadFromJsonAsync<JsonElement>();
+        var dataArray = json.GetProperty("data");
+
+        var results = new List<SubscriptionResult>();
+
+        foreach (var item in dataArray.EnumerateArray())
+        {
+            var subscriptionCode = item.GetProperty("subscription_code").GetString() ?? string.Empty;
+            var emailToken = item.GetProperty("email_token").GetString() ?? string.Empty;
+            var customerCode = item.GetProperty("customer").GetProperty("customer_code").GetString() ?? string.Empty;
+
+            results.Add(new SubscriptionResult(subscriptionCode, emailToken, customerCode));
+        }
+
+        return results;
+    }
+
     public async Task<InitializeTransactionResult> InitializeTransaction(InitializeTransactionRequest request)
     {
         var payload = new
@@ -107,13 +128,25 @@ public class PaystackPaymentProvider : IPaymentProvider
             };
         }
 
+        PaystackWebhookCustomer? customer = null;
+        if (data.TryGetProperty("customer", out var custElement) && custElement.ValueKind == JsonValueKind.Object)
+        {
+            customer = new PaystackWebhookCustomer
+            {
+                Email = custElement.TryGetProperty("email", out var em2) ? em2.GetString() ?? string.Empty : string.Empty,
+                CustomerCode = custElement.TryGetProperty("customer_code", out var cc) ? cc.GetString() ?? string.Empty : string.Empty
+            };
+        }
+
+
         return new VerifyTransactionResult(
             data.GetProperty("reference").GetString()!,
             data.GetProperty("status").GetString()!,
             data.GetProperty("amount").GetInt32() / 100m,
             data.GetProperty("currency").GetString()!,
             channel,
-            authorization
+            authorization,
+            customer!
         );
     }
 }

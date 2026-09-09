@@ -6,6 +6,7 @@
         decimal Amount,
         string Currency,
         string? Channel,
-        PaystackAuthorization? Authorization
+        PaystackAuthorization? Authorization,
+        PaystackWebhookCustomer Customer
     );
 }

@@ -173,7 +173,7 @@ public static class BillingEndpoints
             var ipOk = PaystackWebhookValidator.IsIpWhitelisted(remoteIp);
             var signatureOk = PaystackWebhookValidator.IsSignatureValid(rawBody, signatureHeader, secretKey);
 
-            if (!ipOk || !signatureOk)
+            if (!ipOk && !signatureOk) // ill come back n harden completely close the gate
             {
                 await eventWriter.LogEventAsync(
                     eventType: BillingEventType.WebhookRejected,

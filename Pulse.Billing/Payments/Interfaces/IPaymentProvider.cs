@@ -15,6 +15,7 @@ public interface IPaymentProvider
     //Task<CreateSubscriptionResult> CreateSubscription(CreateSubscriptionRequest request);
 
     //Task<SubscriptionResult> GetSubscription(string subscriptionCode);
+    Task<List<SubscriptionResult>> GetAllSubscriptions();
 
     Task<DisableSubscriptionResult> DisableSubscription(DisableSubscriptionRequest request);
 

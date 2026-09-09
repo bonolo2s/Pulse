@@ -64,6 +64,23 @@ public class VerifyFallbackSweepService : IVerifyFallbackSweepService
             {
                 var result = await _paymentProvider.VerifyTransaction(stuck.PaymentReference);
 
+                var subscription = await _context.Subscriptions
+                    .FirstOrDefaultAsync(s => s.UserId == stuck.UserId && s.IsActive);
+
+                if (subscription != null && string.IsNullOrEmpty(subscription.PaystackSubscriptionCode))
+                {
+                    var allSubs = await _paymentProvider.GetAllSubscriptions();
+                    var match = allSubs.FirstOrDefault(s => s.CustomerCode == result.Customer.CustomerCode); 
+
+                    if (match != null)
+                    {
+                        subscription.PaystackSubscriptionCode = match.SubscriptionCode;
+                        subscription.EmailToken = match.EmailToken;
+                        subscription.PaystackCustomerCode = match.CustomerCode;
+                        await _context.SaveChangesAsync();
+                    }
+                }
+
                 await _eventWriter.LogEventAsync(
                     eventType: BillingEventType.PaymentVerificationFallback,
                     source: BillingEventSource.VerifyFallback,

@@ -7,7 +7,7 @@ namespace Pulse.Billing.Payments.Paystack.DTOs
 {
     public record SubscriptionResult(
         string SubscriptionCode,
-        string Status,
-        DateTime? NextPaymentDate
+        string EmailToken,
+        string CustomerCode
     );
 }
