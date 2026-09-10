@@ -43,6 +43,11 @@ public class BillingService : IBillingService, IBillingValidator
     {
         if (eventId != null)
         {
+            await using var transaction = await _context.Database.BeginTransactionAsync();
+
+            await _context.Database.ExecuteSqlInterpolatedAsync(
+                $"SELECT pg_advisory_xact_lock(hashtext({paymentReference}))");
+
             var alreadyProcessed = await _eventWriter.HasProcessedEventAsync(eventId); // coz same payment refernce can fire twice on two sep events.
             if (alreadyProcessed)
             {

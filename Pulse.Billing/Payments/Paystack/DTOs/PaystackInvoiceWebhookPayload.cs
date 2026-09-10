@@ -1,4 +1,5 @@
 ﻿using Pulse.Billing.Payments.Paystack.DTOs;
+using System.Text.Json.Serialization;
 
 public class PaystackInvoiceWebhookPayload
 {
@@ -8,11 +9,16 @@ public class PaystackInvoiceWebhookPayload
 
 public class PaystackInvoiceWebhookData
 {
+    [JsonPropertyName("invoice_code")]
     public string InvoiceCode { get; set; } = string.Empty;
+
     public int Amount { get; set; }
     public string Status { get; set; } = string.Empty;
     public bool Paid { get; set; }
+
+    [JsonPropertyName("paid_at")]
     public DateTime? PaidAt { get; set; }
+
     public PaystackWebhookCustomer Customer { get; set; } = null!;
     public PaystackInvoiceSubscriptionRef Subscription { get; set; } = null!;
     public PaystackInvoiceTransactionRef Transaction { get; set; } = null!;
@@ -20,7 +26,10 @@ public class PaystackInvoiceWebhookData
 
 public class PaystackInvoiceSubscriptionRef
 {
+    [JsonPropertyName("subscription_code")]
     public string SubscriptionCode { get; set; } = string.Empty;
+
+    [JsonPropertyName("email_token")]
     public string EmailToken { get; set; } = string.Empty;
 }
 
