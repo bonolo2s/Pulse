@@ -233,11 +233,11 @@ Started as my own internal dev tooling — then built with a SaaS mindset from t
 
 ## Backend Folder Structure
 
-```
+```text
 Pulse/
 ├── Pulse.sln
 │
-├── Pulse.Api/                             # Entry point — minimal API endpoints, DI wiring
+├── Pulse.Api/                         # Entry point — minimal API endpoints, DI wiring
 │   ├── Endpoints/
 │   │   ├── IdentityEndpoints.cs
 │   │   ├── MonitoringEndpoints.cs
@@ -248,7 +248,7 @@ Pulse/
 │   ├── Program.cs
 │   └── appsettings.json
 │
-├── Pulse.Identity/                        # User signup, login, and permissions
+├── Pulse.Identity/                    # User signup, login, and permissions
 │   ├── Entities/
 │   │   └── User.cs
 │   ├── Commands/
@@ -267,7 +267,7 @@ Pulse/
 │   │   └── IdentityDbContext.cs
 │   └── DTOs/
 │
-├── Pulse.Monitoring/                      # Core engine — endpoint management + scheduled health checks
+├── Pulse.Monitoring/                  # Core engine — endpoint management + scheduled health checks
 │   ├── Entities/
 │   │   └── MonitoredEndpoint.cs
 │   ├── Commands/
@@ -286,7 +286,7 @@ Pulse/
 │   │   └── MonitoringDbContext.cs
 │   └── DTOs/
 │
-├── Pulse.Observability/                   # Uptime history, latency tracking, SSL certificate data
+├── Pulse.Observability/               # Uptime history, latency tracking, SSL certificate data
 │   ├── Entities/
 │   │   └── CheckResult.cs
 │   ├── Commands/
@@ -304,7 +304,7 @@ Pulse/
 │   │   └── ObservabilityDbContext.cs
 │   └── DTOs/
 │
-├── Pulse.Notifications/                   # Alert rules and notification dispatch
+├── Pulse.Notifications/               # Alert rules and notification dispatch
 │   ├── Entities/
 │   │   └── AlertRule.cs
 │   ├── Commands/
@@ -319,7 +319,7 @@ Pulse/
 │   │   └── NotificationsDbContext.cs
 │   └── DTOs/
 │
-├── Pulse.StatusPages/                     # Public and private system health presentation
+├── Pulse.StatusPages/                 # Public and private system health presentation
 │   ├── Entities/
 │   │   └── StatusPage.cs
 │   ├── Commands/
@@ -339,7 +339,7 @@ Pulse/
 │   │   └── StatusPagesDbContext.cs
 │   └── DTOs/
 │
-├── Pulse.Billing/                         # Free vs Pro tier enforcement and subscription state
+├── Pulse.Billing/                     # Free vs Pro tier enforcement and subscription state
 │   ├── Entities/
 │   │   └── Subscription.cs
 │   ├── Queries/
@@ -354,7 +354,7 @@ Pulse/
 │   │   └── BillingDbContext.cs
 │   └── DTOs/
 │
-├── Pulse.Infrastructure/                  # Redis, SNS, SES clients, shared EF config
+├── Pulse.Infrastructure/              # Redis, SNS, SES clients, shared EF config
 │   ├── Persistence/
 │   │   └── PulseDbContext.cs
 │   ├── Redis/
@@ -362,7 +362,7 @@ Pulse/
 │   │   └── SnsAlertPublisher.cs
 │   └── Migrations/
 │
-├── Pulse.Shared/                          # Shared contracts, base classes, result types
+├── Pulse.Shared/                      # Shared contracts, base classes, result types
 │   ├── Results/
 │   └── Interfaces/
 │
@@ -373,7 +373,6 @@ Pulse/
     ├── Notifications/
     ├── StatusPages/
     └── Billing/
-```
 
 ---
 
