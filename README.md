@@ -51,10 +51,9 @@ Started as my own internal dev tooling — then built with a SaaS mindset from t
 | PostgreSQL (AWS RDS) | Primary store — uptime history, incidents, users, endpoint configs. ACID-compliant, relational integrity where it matters |
 | Redis (AWS ElastiCache) | Check state caching, free tier rate limiting, fast reads |
 
-## Messaging and Event-Driven Systems
-
 - **Billing is fully event-driven** — payment initiation flows through `IPaymentProvider` → `PaystackPaymentProvider`, while Paystack remains the source of truth for money movement. Once the customer pays, provider webhooks drive the local `Payment → Invoice → Subscription` lifecycle and append to the billing audit trail.
 
+```text
 ┌──────────────┐
 │      FE      │
 │ Payment UI   │
@@ -78,9 +77,9 @@ Started as my own internal dev tooling — then built with a SaaS mindset from t
 │   (Abstraction)      │
 └──────────┬───────────┘
            ▼
-┌──────────────────────┐
+┌────────────────────────┐
 │ PaystackPaymentProvider│
-└──────────┬───────────┘
+└──────────┬─────────────┘
            │ API Call
            ▼
 ╔══════════════════════╗
@@ -142,14 +141,9 @@ Started as my own internal dev tooling — then built with a SaaS mindset from t
                  ▼
           Update Payment lifecycle
 
-—**Strict handling where money changes hands** — duplicate events are handled through idempotency keyed on the provider event ID, while an advisory lock keyed on the stable paymentReference prevents concurrent deliveries from bypassing duplicate checks.
-—**Built for eventual consistency and graceful failure** — delayed or missing webhooks fall back to provider verification, allowing the payment lifecycle to recover without assuming local state is instantly synchronised.
+- **Strict handling where money changes hands** — duplicate events are handled through idempotency keyed on the provider event ID, while an advisory lock keyed on the stable paymentReference prevents concurrent deliveries from bypassing duplicate checks.
 
-## Platform-Level Messaging and Event-Driven Architecture
-— **Lambda handles the heavy lifting independently from the API** — health-check execution is isolated, so failures don't creep between the API and monitoring workload. Health checks can scale independently and only consume compute when actually used, rather than keeping a background job permanently running and consuming CPU, RAM, and infrastructure cost.
-— **Event-driven health pipeline** — EventBridge triggers Lambda, which fans out through SNS to SQS. SQS then delivers work through polling to two separate queues, each handled by its own hosted service.
-—**Controlled blast radius** — each queue and consumer is isolated, allowing failures to be contained while each part can be maintained and scaled independently.
-
+- **Built for eventual consistency and graceful failure** — delayed or missing webhooks fall back to provider verification, allowing the payment lifecycle to recover without assuming local state is instantly synchronised.
 
 
 ### Cloud (AWS)
