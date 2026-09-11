@@ -196,7 +196,7 @@ Started as my own internal dev tooling — then built with a SaaS mindset from t
               │ PostgreSQL    │    │ Redis           │
               │ (RDS)         │    │ (ElastiCache)   │
               └──────────────┘    └────────────────┘
-
+```
    ┌─────────────────────────────────────────────────┐
    │         EventBridge (Cron Scheduler)             │
    └──────────────────────┬──────────────────────────┘
