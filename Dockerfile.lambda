@@ -1,0 +1,18 @@
+FROM mcr.microsoft.com/dotnet/sdk:9.0 AS build
+WORKDIR /src
+
+COPY Pulse.Lambda/Pulse.Lambda.csproj Pulse.Lambda/
+COPY Pulse.Infrastructure/Pulse.Infrastructure.csproj Pulse.Infrastructure/
+COPY Pulse.Observability/Pulse.Observability.csproj Pulse.Observability/
+COPY Pulse.Shared/Pulse.Shared.csproj Pulse.Shared/
+
+RUN dotnet restore Pulse.Lambda/Pulse.Lambda.csproj
+
+COPY . .
+RUN dotnet publish Pulse.Lambda/Pulse.Lambda.csproj -c Release -o /app/publish
+
+FROM public.ecr.aws/lambda/dotnet:9
+WORKDIR /var/task
+COPY --from=build /app/publish .
+
+CMD ["Pulse.Lambda::Pulse.Lambda.HealthCheckFunction::FunctionHandler"]
