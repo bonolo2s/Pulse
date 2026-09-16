@@ -14,12 +14,17 @@ public static class DependencyInjection
         services.AddHttpClient();
         services.AddSingleton<IAmazonSimpleNotificationService>(_ =>
         {
+            var localEndpoint = Environment.GetEnvironmentVariable("AWS__SNS__SERVICEURL");
             var config = new AmazonSimpleNotificationServiceConfig
             {
-                ServiceURL = "http://host.docker.internal:4566",
-                AuthenticationRegion = "eu-west-1"
+                RegionEndpoint = Amazon.RegionEndpoint.EUWest1
             };
-            return new AmazonSimpleNotificationServiceClient("test", "test", config);//
+            if (!string.IsNullOrEmpty(localEndpoint))
+            {
+                config.ServiceURL = localEndpoint;
+                return new AmazonSimpleNotificationServiceClient("test", "test", config);
+            }
+            return new AmazonSimpleNotificationServiceClient(config);
         });
         services.AddSingleton<ISnsPublisher>(provider =>
         {

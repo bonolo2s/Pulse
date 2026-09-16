@@ -41,13 +41,13 @@ public class BillingService : IBillingService, IBillingValidator
         Guid? userId,
         PaystackAuthorization? authorization)
     {
+        await using var transaction = await _context.Database.BeginTransactionAsync();
+
+        await _context.Database.ExecuteSqlInterpolatedAsync(
+            $"SELECT pg_advisory_xact_lock(hashtext({paymentReference}))");
+
         if (eventId != null)
         {
-            await using var transaction = await _context.Database.BeginTransactionAsync();
-
-            await _context.Database.ExecuteSqlInterpolatedAsync(
-                $"SELECT pg_advisory_xact_lock(hashtext({paymentReference}))");
-
             var alreadyProcessed = await _eventWriter.HasProcessedEventAsync(eventId); // coz same payment refernce can fire twice on two sep events.
             if (alreadyProcessed)
             {
@@ -60,6 +60,8 @@ public class BillingService : IBillingService, IBillingValidator
                     payload: null,
                     previousStatus: null,
                     newStatus: null);
+                await transaction.CommitAsync();
+
                 return;
             }
         }
@@ -193,6 +195,8 @@ public class BillingService : IBillingService, IBillingValidator
             payload: null,
             previousStatus: previousStatus,
             newStatus: newEventType);
+
+        await transaction.CommitAsync();
     }
 
     public async Task ValidateEndpointLimitAsync(Guid userId, int currentEndpointCount)

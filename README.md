@@ -4,9 +4,9 @@
 
 ## Overview
 
-Pulse started as an internal frustration — manually checking whether services were up, getting blindsided by silent failures, and only finding out something broke when a user complained. That frustration became a platform.
+Pulse started as an internal frustration — manually checking whether services were up, getting blindsided by silent failures, and only finding out something broke when i track the bug end to end. That frustration became a platform.
 
-Pulse monitors your endpoints around the clock, measures latency, inspects SSL certificates, tracks uptime history, and alerts your team the moment something degrades or goes down — before your users notice.
+Pulse monitors your endpoints around the clock, measures latency, inspects SSL certificates, tracks uptime history, and alerts the moment something degrades or goes down — before you notice.
 
 Started as my own internal dev tooling — then built with a SaaS mindset from the ground up, holding itself to the same reliability standards it monitors for.
 
@@ -50,6 +50,101 @@ Started as my own internal dev tooling — then built with a SaaS mindset from t
 | Entity Framework Core | ORM, migrations |
 | PostgreSQL (AWS RDS) | Primary store — uptime history, incidents, users, endpoint configs. ACID-compliant, relational integrity where it matters |
 | Redis (AWS ElastiCache) | Check state caching, free tier rate limiting, fast reads |
+
+- **Billing is fully event-driven** — payment initiation flows through `IPaymentProvider` → `PaystackPaymentProvider`, while Paystack remains the source of truth for money movement. Once the customer pays, provider webhooks drive the local `Payment → Invoice → Subscription` lifecycle and append to the billing audit trail.
+
+```text
+┌──────────────┐
+│      FE      │
+│ Payment UI   │
+└──────┬───────┘
+       │ Initiate payment
+       ▼
+┌──────────────────────┐
+│      PULSE API       │
+│   Payment Endpoint   │
+└──────────┬───────────┘
+           ▼
+┌──────────────────────┐
+│   Billing / Handler  │
+│                      │
+│ Creates Payment      │
+│ Resolves Plan Price  │
+└──────────┬───────────┘
+           ▼
+┌──────────────────────┐
+│  IPaymentProvider    │
+│   (Abstraction)      │
+└──────────┬───────────┘
+           ▼
+┌────────────────────────┐
+│ PaystackPaymentProvider│
+└──────────┬─────────────┘
+           │ API Call
+           ▼
+╔══════════════════════╗
+║       PAYSTACK       ║
+╚══════════╤═══════════╝
+           │
+           │ checkout URL
+           │ access code
+           │ reference
+           ▼
+┌──────────────────────┐
+│         FE           │
+│ Customer Pays        │
+└──────────┬───────────┘
+           │
+           ▼
+╔══════════════════════╗
+║       PAYSTACK       ║
+╚══════════╤═══════════╝
+           │
+           │ webhook
+           ▼
+┌──────────────────────┐
+│ /webhooks/payment    │
+│     Pulse API        │
+└──────────┬───────────┘
+           ▼
+┌──────────────────────┐
+│ ProcessPaymentResult │
+│       Command        │
+└──────────┬───────────┘
+           ▼
+┌──────────────────────────────────┐
+│           BILLING                │
+│                                  │
+│  Payment → Invoice → Subscription│
+│                                  │
+│       + BillingEvent             │
+└──────────────────┬───────────────┘
+                   ▼
+            ┌─────────────┐
+            │  DATABASE   │
+            └─────────────┘
+
+     FALLBACK / EVENTUAL CONSISTENCY
+     ──────────────────────────────
+
+     Webhook delayed / missing
+                │
+                ▼
+     ┌──────────────────────┐
+     │ VerifyTransaction()  │
+     └──────────┬───────────┘
+                ▼
+           ╔═══════════╗
+           ║ PAYSTACK  ║
+           ╚═════╤═════╝
+                 │ Actual status
+                 ▼
+          Update Payment lifecycle
+
+- **Strict handling where money changes hands** — duplicate events are handled through idempotency keyed on the provider event ID, while an advisory lock keyed on the stable paymentReference prevents concurrent deliveries from bypassing duplicate checks.
+
+- **Built for eventual consistency and graceful failure** — delayed or missing webhooks fall back to provider verification, allowing the payment lifecycle to recover without assuming local state is instantly synchronised.
+
 
 ### Cloud (AWS)
 
@@ -101,7 +196,7 @@ Started as my own internal dev tooling — then built with a SaaS mindset from t
               │ PostgreSQL    │    │ Redis           │
               │ (RDS)         │    │ (ElastiCache)   │
               └──────────────┘    └────────────────┘
-
+```
    ┌─────────────────────────────────────────────────┐
    │         EventBridge (Cron Scheduler)             │
    └──────────────────────┬──────────────────────────┘
@@ -138,11 +233,11 @@ Started as my own internal dev tooling — then built with a SaaS mindset from t
 
 ## Backend Folder Structure
 
-```
+```text
 Pulse/
 ├── Pulse.sln
 │
-├── Pulse.Api/                             # Entry point — minimal API endpoints, DI wiring
+├── Pulse.Api/                         # Entry point — minimal API endpoints, DI wiring
 │   ├── Endpoints/
 │   │   ├── IdentityEndpoints.cs
 │   │   ├── MonitoringEndpoints.cs
@@ -153,7 +248,7 @@ Pulse/
 │   ├── Program.cs
 │   └── appsettings.json
 │
-├── Pulse.Identity/                        # User signup, login, and permissions
+├── Pulse.Identity/                    # User signup, login, and permissions
 │   ├── Entities/
 │   │   └── User.cs
 │   ├── Commands/
@@ -172,7 +267,7 @@ Pulse/
 │   │   └── IdentityDbContext.cs
 │   └── DTOs/
 │
-├── Pulse.Monitoring/                      # Core engine — endpoint management + scheduled health checks
+├── Pulse.Monitoring/                  # Core engine — endpoint management + scheduled health checks
 │   ├── Entities/
 │   │   └── MonitoredEndpoint.cs
 │   ├── Commands/
@@ -191,7 +286,7 @@ Pulse/
 │   │   └── MonitoringDbContext.cs
 │   └── DTOs/
 │
-├── Pulse.Observability/                   # Uptime history, latency tracking, SSL certificate data
+├── Pulse.Observability/               # Uptime history, latency tracking, SSL certificate data
 │   ├── Entities/
 │   │   └── CheckResult.cs
 │   ├── Commands/
@@ -209,7 +304,7 @@ Pulse/
 │   │   └── ObservabilityDbContext.cs
 │   └── DTOs/
 │
-├── Pulse.Notifications/                   # Alert rules and notification dispatch
+├── Pulse.Notifications/               # Alert rules and notification dispatch
 │   ├── Entities/
 │   │   └── AlertRule.cs
 │   ├── Commands/
@@ -224,7 +319,7 @@ Pulse/
 │   │   └── NotificationsDbContext.cs
 │   └── DTOs/
 │
-├── Pulse.StatusPages/                     # Public and private system health presentation
+├── Pulse.StatusPages/                 # Public and private system health presentation
 │   ├── Entities/
 │   │   └── StatusPage.cs
 │   ├── Commands/
@@ -244,7 +339,7 @@ Pulse/
 │   │   └── StatusPagesDbContext.cs
 │   └── DTOs/
 │
-├── Pulse.Billing/                         # Free vs Pro tier enforcement and subscription state
+├── Pulse.Billing/                     # Free vs Pro tier enforcement and subscription state
 │   ├── Entities/
 │   │   └── Subscription.cs
 │   ├── Queries/
@@ -259,7 +354,7 @@ Pulse/
 │   │   └── BillingDbContext.cs
 │   └── DTOs/
 │
-├── Pulse.Infrastructure/                  # Redis, SNS, SES clients, shared EF config
+├── Pulse.Infrastructure/              # Redis, SNS, SES clients, shared EF config
 │   ├── Persistence/
 │   │   └── PulseDbContext.cs
 │   ├── Redis/
@@ -267,7 +362,7 @@ Pulse/
 │   │   └── SnsAlertPublisher.cs
 │   └── Migrations/
 │
-├── Pulse.Shared/                          # Shared contracts, base classes, result types
+├── Pulse.Shared/                      # Shared contracts, base classes, result types
 │   ├── Results/
 │   └── Interfaces/
 │
@@ -278,7 +373,6 @@ Pulse/
     ├── Notifications/
     ├── StatusPages/
     └── Billing/
-```
 
 ---
 

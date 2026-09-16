@@ -39,13 +39,13 @@ aws ses verify-email-identity `
 # EventBridge rules
 Write-Host "Creating EventBridge rules..."
 $intervals = @(
-    # @{ Name = "1min";  Rate = "rate(1 minute)";  Seconds = 60 },
+    @{ Name = "1min";  Rate = "rate(1 minute)";  Seconds = 60 },
     @{ Name = "3min";  Rate = "rate(3 minutes)"; Seconds = 180 }
-    #@{ Name = "5min";  Rate = "rate(5 minutes)"; Seconds = 300 }
-    # @{ Name = "10min"; Rate = "rate(10 minutes)"; Seconds = 600 },
-    # @{ Name = "15min"; Rate = "rate(15 minutes)"; Seconds = 900 },
-    # @{ Name = "30min"; Rate = "rate(30 minutes)"; Seconds = 1800 },
-    # @{ Name = "1hour"; Rate = "rate(1 hour)";     Seconds = 3600 }
+    @{ Name = "5min";  Rate = "rate(5 minutes)"; Seconds = 300 }
+    @{ Name = "10min"; Rate = "rate(10 minutes)"; Seconds = 600 },
+    @{ Name = "15min"; Rate = "rate(15 minutes)"; Seconds = 900 },
+    @{ Name = "30min"; Rate = "rate(30 minutes)"; Seconds = 1800 },
+    @{ Name = "1hour"; Rate = "rate(1 hour)";     Seconds = 3600 }
 )
 
 foreach ($interval in $intervals) {
