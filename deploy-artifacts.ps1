@@ -1,18 +1,45 @@
 $REGION = "eu-west-1"
 $ACCOUNT_ID = "881005428470"
-$IMAGE_TAG = "net9-v1"
+$API_TAG = "api-v1"
+$LAMBDA_TAG = "lambda-v1"
 
-Write-Host "Building API image..." ##for new changes
-docker build -t pulse-api:$IMAGE_TAG .
+$ErrorActionPreference = "Stop"
 
-Write-Host "Logging into ECR..."
-aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com"
+function Run-Step {
+    param($Description, $ScriptBlock)
+    Write-Host $Description
+    try {
+        & $ScriptBlock
+        if ($LASTEXITCODE -ne 0) {
+            throw "Command failed with exit code $LASTEXITCODE"
+        }
+    } catch {
+        Write-Host "FAILED: $Description"
+        Write-Host $_.Exception.Message
+        exit 1
+    }
+}
 
-Write-Host "Tagging and pushing API image..."
-docker tag pulse-api:$IMAGE_TAG "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/pulse-api:$IMAGE_TAG"
-docker push "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/pulse-api:$IMAGE_TAG"
+Write-Host "Creating ECR repositories (safe to fail if they already exist)..."
+aws ecr create-repository --repository-name pulse-api --region $REGION 2>$null
+aws ecr create-repository --repository-name pulse-lambda --region $REGION 2>$null
 
-Write-Host "Pushing Lambda zip to S3..."
-aws s3 cp publish/lambda.zip "s3://pulse-logs-dev-$ACCOUNT_ID/lambda/lambda.zip"
+Run-Step "Building API image..." { docker build -t pulse-api:$API_TAG . }
 
-Write-Host "Done. Image and Lambda code pushed to AWS."
+Run-Step "Building Lambda image..." { docker build -t pulse-lambda:$LAMBDA_TAG -f Dockerfile.lambda . }
+
+Run-Step "Logging into ECR..." {
+    aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com"
+}
+
+Run-Step "Tagging and pushing API image..." {
+    docker tag pulse-api:$API_TAG "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/pulse-api:$API_TAG"
+    docker push "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/pulse-api:$API_TAG"
+}
+
+Run-Step "Tagging and pushing Lambda image..." {
+    docker tag pulse-lambda:$LAMBDA_TAG "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/pulse-lambda:$LAMBDA_TAG"
+    docker push "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com/pulse-lambda:$LAMBDA_TAG"
+}
+
+Write-Host "Done. Images pushed to AWS."
