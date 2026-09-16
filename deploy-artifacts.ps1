@@ -26,7 +26,7 @@ aws ecr create-repository --repository-name pulse-lambda --region $REGION 2>$nul
 
 Run-Step "Building API image..." { docker build -t pulse-api:$API_TAG . }
 
-Run-Step "Building Lambda image..." { docker build -t pulse-lambda:$LAMBDA_TAG -f Dockerfile.lambda . }
+Run-Step "Building Lambda image..." { docker build --provenance=false -t pulse-lambda:$LAMBDA_TAG -f Dockerfile.lambda . }
 
 Run-Step "Logging into ECR..." {
     aws ecr get-login-password --region $REGION | docker login --username AWS --password-stdin "$ACCOUNT_ID.dkr.ecr.$REGION.amazonaws.com"
