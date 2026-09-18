@@ -21,8 +21,8 @@ function Run-Step {
 }
 
 Write-Host "Creating ECR repositories (safe to fail if they already exist)..."
-aws ecr create-repository --repository-name pulse-api --region $REGION 2>$null
-aws ecr create-repository --repository-name pulse-lambda --region $REGION 2>$null
+try { aws ecr create-repository --repository-name pulse-api --region $REGION } catch {}
+try { aws ecr create-repository --repository-name pulse-lambda --region $REGION } catch {}
 
 Run-Step "Building API image..." { docker build -t pulse-api:$API_TAG . }
 

@@ -24,15 +24,32 @@ builder.Services.AddDefaultAWSOptions(new Amazon.Extensions.NETCore.Setup.AWSOpt
     Credentials = new Amazon.Runtime.BasicAWSCredentials("test", "test"),
     DefaultClientConfig = { ServiceURL = "http://localhost:4566", AuthenticationRegion = "eu-west-1" } // The important one. url endpoint to avoid hitting real AWS services
 });
+
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
+    ?? $"Host={builder.Configuration["ConnectionStrings:DefaultConnection:Host"]};" +
+$"Port={builder.Configuration["ConnectionStrings:DefaultConnection:Port"]};" +
+$"Database={builder.Configuration["ConnectionStrings:DefaultConnection:Database"]};" +
+$"Username={builder.Configuration["ConnectionStrings:DefaultConnection:Username"]};" +
+$"Password={builder.Configuration["ConnectionStrings:DefaultConnection:Password"]}";
+
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddIdentity(
-    builder.Configuration.GetConnectionString("DefaultConnection")!,
+    //builder.Configuration.GetConnectionString("DefaultConnection")!,
+    connectionString,
     builder.Configuration);
-builder.Services.AddMonitoring(builder.Configuration.GetConnectionString("DefaultConnection")!);
-builder.Services.AddObservability(builder.Configuration.GetConnectionString("DefaultConnection")!);
-builder.Services.AddNotifications(builder.Configuration.GetConnectionString("DefaultConnection")!);
-builder.Services.AddStatusPages(builder.Configuration.GetConnectionString("DefaultConnection")!);
-builder.Services.AddBilling(builder.Configuration.GetConnectionString("DefaultConnection")!);
+
+//builder.Services.AddMonitoring(builder.Configuration.GetConnectionString("DefaultConnection")!);
+//builder.Services.AddObservability(builder.Configuration.GetConnectionString("DefaultConnection")!);
+//builder.Services.AddNotifications(builder.Configuration.GetConnectionString("DefaultConnection")!);
+//builder.Services.AddStatusPages(builder.Configuration.GetConnectionString("DefaultConnection")!);
+//builder.Services.AddBilling(builder.Configuration.GetConnectionString("DefaultConnection")!);
+
+builder.Services.AddMonitoring(connectionString);
+builder.Services.AddObservability(connectionString);
+builder.Services.AddNotifications(connectionString);
+builder.Services.AddStatusPages(connectionString);
+builder.Services.AddBilling(connectionString);
+
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("FrontendDev", policy =>
