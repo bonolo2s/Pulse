@@ -18,12 +18,23 @@ builder.Services.ConfigureHttpJsonOptions(options =>
     options.SerializerOptions.Converters.Add(new System.Text.Json.Serialization.JsonStringEnumConverter());
 });
 builder.Services.AddHttpClient();
-builder.Services.AddDefaultAWSOptions(new Amazon.Extensions.NETCore.Setup.AWSOptions
+
+if (builder.Environment.IsDevelopment())
 {
-    Region = Amazon.RegionEndpoint.EUWest1,
-    Credentials = new Amazon.Runtime.BasicAWSCredentials("test", "test"),
-    DefaultClientConfig = { ServiceURL = "http://localhost:4566", AuthenticationRegion = "eu-west-1" } // The important one. url endpoint to avoid hitting real AWS services
-});
+    builder.Services.AddDefaultAWSOptions(new Amazon.Extensions.NETCore.Setup.AWSOptions
+    {
+        Region = Amazon.RegionEndpoint.EUWest1,
+        Credentials = new Amazon.Runtime.BasicAWSCredentials("test", "test"),
+        DefaultClientConfig = { ServiceURL = "http://localhost:4566", AuthenticationRegion = "eu-west-1" } // The important one. url endpoint to avoid hitting real AWS services
+    });
+}
+else
+{
+    builder.Services.AddDefaultAWSOptions(new Amazon.Extensions.NETCore.Setup.AWSOptions
+    {
+        Region = Amazon.RegionEndpoint.EUWest1
+    });
+}
 
 var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
     ?? $"Host={builder.Configuration["ConnectionStrings:DefaultConnection:Host"]};" +
