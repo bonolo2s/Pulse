@@ -1,5 +1,6 @@
 ﻿using Amazon.SimpleNotificationService;
 using Microsoft.Extensions.DependencyInjection;
+using Npgsql;
 using Pulse.Infrastructure.Messaging;
 using Pulse.Lambda.Interfaces;
 using Pulse.Lambda.Services;
@@ -38,8 +39,30 @@ public static class DependencyInjection
         services.AddScoped<IHealthCheckService, HealthCheckService>();
         services.AddScoped<IEndpointRepository>(provider =>
         {
-            var connectionString = Environment.GetEnvironmentVariable("DB__CONNECTIONSTRING")
-                ?? throw new InvalidOperationException("DB__CONNECTIONSTRING not set.");
+            var connectionString = Environment.GetEnvironmentVariable("DB__CONNECTIONSTRING");
+
+            if (string.IsNullOrEmpty(connectionString))
+            {
+                var passwordParameterName = Environment.GetEnvironmentVariable("DB__PASSWORDPARAMETERNAME")
+                    ?? throw new InvalidOperationException("DB__PASSWORDPARAMETERNAME not set.");
+
+                using var ssm = new AmazonSimpleSystemsManagementClient(Amazon.RegionEndpoint.EUWest1);
+                var passwordResponse = ssm.GetParameterAsync(new GetParameterRequest
+                {
+                    Name = passwordParameterName,
+                    WithDecryption = true
+                }).GetAwaiter().GetResult();
+
+                connectionString = new NpgsqlConnectionStringBuilder
+                {
+                    Host = Environment.GetEnvironmentVariable("DB__HOST"),
+                    Port = int.Parse(Environment.GetEnvironmentVariable("DB__PORT") ?? "5432"),
+                    Database = Environment.GetEnvironmentVariable("DB__DATABASE"),
+                    Username = Environment.GetEnvironmentVariable("DB__USERNAME"),
+                    Password = passwordResponse.Parameter.Value
+                }.ConnectionString;
+            }
+
             return new EndpointRepository(connectionString);
         });
         return services;
