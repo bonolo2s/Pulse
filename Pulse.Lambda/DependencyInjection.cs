@@ -1,4 +1,6 @@
 ﻿using Amazon.SimpleNotificationService;
+using Amazon.SimpleSystemsManagement;
+using Amazon.SimpleSystemsManagement.Model;
 using Microsoft.Extensions.DependencyInjection;
 using Npgsql;
 using Pulse.Infrastructure.Messaging;
