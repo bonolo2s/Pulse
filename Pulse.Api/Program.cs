@@ -36,12 +36,17 @@ else
     });
 }
 
-var connectionString = builder.Configuration.GetConnectionString("DefaultConnection")
-    ?? $"Host={builder.Configuration["ConnectionStrings:DefaultConnection:Host"]};" +
-$"Port={builder.Configuration["ConnectionStrings:DefaultConnection:Port"]};" +
-$"Database={builder.Configuration["ConnectionStrings:DefaultConnection:Database"]};" +
-$"Username={builder.Configuration["ConnectionStrings:DefaultConnection:Username"]};" +
-$"Password={builder.Configuration["ConnectionStrings:DefaultConnection:Password"]}";
+var connectionString = builder.Configuration.GetConnectionString("DefaultConnection");
+
+if (string.IsNullOrWhiteSpace(connectionString))
+{
+    connectionString =
+        $"Host={builder.Configuration["ConnectionStrings:DefaultConnection:Host"]};" +
+        $"Port={builder.Configuration["ConnectionStrings:DefaultConnection:Port"]};" +
+        $"Database={builder.Configuration["ConnectionStrings:DefaultConnection:Database"]};" +
+        $"Username={builder.Configuration["ConnectionStrings:DefaultConnection:Username"]};" +
+        $"Password={builder.Configuration["ConnectionStrings:DefaultConnection:Password"]}";
+}
 
 builder.Services.AddInfrastructure(builder.Configuration);
 builder.Services.AddIdentity(
